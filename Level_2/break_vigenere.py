@@ -23,9 +23,6 @@ def partition(text, num):
     return cols
 
 def find_keylen(ctext, low=3, high=10, rows=5):
-    if high > len(ctext) / 2:
-        high = len(ctext) / 2
-
     results = {}
     for length in range(low, high + 1):
         indices = [index_of_coincidence(col) for col in partition(ctext, length)]

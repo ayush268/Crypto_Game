@@ -37,7 +37,7 @@
 
 There are 5 sub-levels in the chapter, first 4 of these don't have any cipher which needs to be decrypted. \newline
 
-The last sub-level is a \textbf{Substitution Cipher}, the answer to - "how it was recognised and solved" is explained in the subsection after the following list of commands. \newline
+The last sub-level is a \textbf{Substitution Cipher}, the answer to - ``how it was recognised and solved" is explained in the subsection after the following list of commands. \newline
 
 Below is the solution to each of the sub-levels:
 \begin{enumerate}
@@ -57,7 +57,9 @@ The ciphertext given was: \newline
 
 For identifying what kind of cipher is applied in the above text, we will use the \textbf{Index of Coincidence}. \newline
 
-The \textit{Index of Coincidence} of the above ciphertext is about $0.07$, which is approximately same as a valid English text, this suggests that the cipher used is \textit{Mono-alphabetic} such as \textit{Substitution Cipher}.
+The detailed explanation on \textit{Index of Coincidence} can be found in \cref{ic}. \newline
+
+The \textit{Index of Coincidence} of the above ciphertext is about $0.07$, which is approximately same as a valid English text, this suggests that the cipher used is \textit{Mono-alphabetic} such as \textit{Substitution Cipher}. \newline
 
 For Solving the \textit{Substitution Cipher}, the following steps were employed:
 \begin{enumerate}
@@ -68,6 +70,8 @@ For Solving the \textit{Substitution Cipher}, the following steps were employed:
     \item Built the decryption key by keeping a map of characters as they are being replaced.
     \item Finally used the decryption key to decrypt the code given for the solution.
 \end{enumerate}
+
+The code used in this part is in the file - \texttt{break\_substitution.py}. \newline
 
 The Steps employed in the hangman game and building the key are mentioned below:
 \begin{minted}{python}
@@ -116,13 +120,52 @@ Code: \texttt{anQp81Qpan} \newline
 Solution: \texttt{cyLe70Lecy}
 
 \section{Chapter 2 (The Caveman)}
+There are 2 sub-levels in the chapter, first one doesn't have any cipher which needs to be decrypted. \newline
 
+The second sub-level is a \textbf{Vigenere Cipher}, the answer to - ``how it was recognised and solved" is explained in the subsection after the following list of commands. \newline
 
+The detailed explanation on \textit{Vigenere Cipher} can be found in \cref{vc}. \newline
+
+Below is the solution to each of the sub-levels:
+\begin{enumerate}
+  \setlength\itemsep{0em}
+    \item read
+    \item the\_cave\_man\_be\_pleased
+\end{enumerate}
+
+\subsection{Vigenere Cipher}
+The ciphertext given was: \newline
+
+\texttt{Lg ccud qh urg tgay ejbwdkt, wmgtf su bgud nkudnk lrd vjfbg. Yrhfm qvd vng sfuuxytj \newline "vkj\_ecwo\_ogp\_ej\_rnfkukf" wt iq urtuwjm. Ocz iqa jdag vio uzthsivi pqx vkj pgyd encpggt. Uy hopg yjg fhkz arz hkscv ckoq pgfn vu wwygt nkioe zttft djkth.} \newline
+
+For identifying what kind of cipher is applied in the above text, we will use the \textbf{Index of Coincidence}. \newline
+
+The detailed explanation on \textit{Index of Coincidence} can be found in \cref{ic}. \newline
+
+The \textit{Index of Coincidence} of the above ciphertext is about $0.042$, which is closer to the uniform distribution of English text, this suggests that the cipher is \textit{Poly-alphabetic} such as \textit{Vigenere Cipher}, it may be some other Poly-alphabetic cipher as well but we still have to give it a shot. \newline
+
+For solving the \textit{Vigenere Cipher}, the following steps were employed:
+\begin{enumerate}
+  \setlength\itemsep{0em}
+    \item Remove all characters from the text which are not part of the English alphabets and capitilize all characters.
+    \item Partition the text according to different key lengths and sort them according to the \textit{Index of Coincidences} achieved, since higher the IC, closer it is to valid English Text.
+    \item For each keylen, perform frequency analysis to get the best key possible with the given length.
+    \item Try out all the keys retrieved and see which one gives some valid English text.
+\end{enumerate}
+
+The code used in this part is in the file - \texttt{break\_vigenere.py}. \newline
+
+The plaintext revealed after using the above decryption key is: \newline
+
+\texttt{Be wary of the next chamber, there is very little joy there. Speak out the password \newline"the\_cave\_man\_be\_pleased" to go through. May you have the strength for the next chamber. To find the exit you first will need to utter magic words there.} \newline
+
+From the above, the solution is revealed: \texttt{the\_cave\_man\_be\_pleased}.
+\newpage
 \section{Appendix}
 
 This section explains each of the things used in between the solutions without proper explanation.
 
-\subsection{Index of Coincidence}
+\subsection{Index of Coincidence} \label{ic}
 
 The \textbf{Index of Coincidence} is a measure of how similar a frequency distribution is to the uniform distribution.
 $$ I.C. = \frac{\sum_{i=A}^{i=Z} f_i(f_i-1)}{N(N-1)}$$
@@ -139,5 +182,14 @@ Important facts about the \textit{Index of Coincidence}:
 \end{itemize}
 
 We can get an approximate idea of what kind of cipher is used to generate the ciphertext by using the \textit{Index of Coincidence}.
+
+\subsection{Vigenere Cipher} \label{vc}
+The Vigenere Cipher is a polyalphabetic substitution cipher. \newline
+
+Suppose, the length of the encryption key is $k$, then the string formed by picking out each letter with a multiple of $k$ letters in between them will be a \textit{Caesar Cipher}. \newline
+
+Since each such string is a \textit{Caesar Cipher}, the \textit{Index of Coincidence} of this string will be closer to that of valid English text rather than closer to uniform distribution. \newline
+
+Using the above principle, we can crack the \textit{Vigenere Cipher}.
 
 \end{document}
