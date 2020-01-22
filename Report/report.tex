@@ -1,0 +1,143 @@
+\documentclass[10pt,twoside]{article}
+
+\newcommand{\reporttitle}{Level 1 + Level 2}
+\newcommand{\reportauthora}{Ayush Bansal}
+\newcommand{\reportauthorb}{Gunjan Jalori}
+\newcommand{\reportauthorc}{Siddharth Nohria}
+\newcommand{\reporttype}{Solution Report 1}
+\newcommand{\cida}{160177}
+\newcommand{\cidb}{170283}
+\newcommand{\cidc}{160686}
+
+% include files that load packages and define macros
+\input{includes} % various packages needed for maths etc.
+\input{notation} % short-hand notation and macros
+
+%\setlength{\parskip}{0pt}
+%\setlength{\parsep}{0pt}
+%\setlength{\topskip}{0pt}
+%\setlength{\topmargin}{0pt}
+%\setlength{\partopsep}{0pt}
+%%\setlength\lineskip{0pt}
+%\linespread{0.5}
+%\setlength{\textfloatsep}{2pt}
+%\setlength{\intextsep}{2pt}
+
+%\setlength\itemsep{0em}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+% front page
+\input{titlepage}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%% Main document
+\section{Chapter 1 (The Entry)}
+
+There are 5 sub-levels in the chapter, first 4 of these don't have any cipher which needs to be decrypted. \newline
+
+The last sub-level is a \textbf{Substitution Cipher}, the answer to - "how it was recognised and solved" is explained in the subsection after the following list of commands. \newline
+
+Below is the solution to each of the sub-levels:
+\begin{enumerate}
+  \setlength\itemsep{0em}
+  \item go
+  \item read
+  \item enter
+  \item read
+  \item cyLe70Lecy
+\end{enumerate}
+
+\subsection{Substitution Cipher}
+
+The ciphertext given was: \newline
+
+\texttt{Nwy dejp pmcplpz cdp sxlrc adegipl ws cdp aejpr. Er nwy aem rpp cdplp xr mwcdxmv ws xmcplprc xm cdp adegipl. Rwgp ws cdp qecpl adegiplr fxqq ip gwlp xmcplprcxmv cdem cdxr wmp, x eg rplxwyr. Cdp awzp yrpz swl cdxr gprrevp xr e rxgbqp ryircxcycxwm axbdpl xm fdxad zxvxcr dejp ippm rdxscpz in 2 bqeapr. Swl cdxr lwymz berrfwlz xr vxjpm ipqwf, fxcdwyc cdp hywcpr.} \newline
+
+For identifying what kind of cipher is applied in the above text, we will use the \textbf{Index of Coincidence}. \newline
+
+The \textit{Index of Coincidence} of the above ciphertext is about $0.07$, which is approximately same as a valid English text, this suggests that the cipher used is \textit{Mono-alphabetic} such as \textit{Substitution Cipher}.
+
+For Solving the \textit{Substitution Cipher}, the following steps were employed:
+\begin{enumerate}
+  \setlength\itemsep{0em}
+    \item Calculate the frequency of each of the characters in the ciphertext, ignoring anything which is not an english alphabet.
+    \item The Character with the highest frequency is most probably `e' or `a', which can be placed in its place and identified further.
+    \item As the places get revealed, played hangman to find out what the other characters might be looking at one-letter, 2-letter, 3-letter words with highest number of characters revealed.
+    \item Built the decryption key by keeping a map of characters as they are being replaced.
+    \item Finally used the decryption key to decrypt the code given for the solution.
+\end{enumerate}
+
+The Steps employed in the hangman game and building the key are mentioned below:
+\begin{minted}{python}
+key = {}
+key['p'] = 'e'    # Because 'p' has very high frequency
+key['r'] = 's'    # _ee word exists, matches with "see"
+key['i'] = 'b'    # _e word exists, matches with "be"
+key['n'] = 'y'    # b_ word exists, matches with "by"
+key['m'] = 'n'    # bee_ word exists, matches with "been"
+key['w'] = 'o'    # _ne word exists, matches with "one"
+key['s'] = 'f'    # o_ word exists, 'n' is already taken, matches with "of"
+key['l'] = 'r'    # fo_ word exists, matches with "for"
+key['y'] = 'u'    # yo_ word exists, matches with "you"
+key['g'] = 'm'    # so_e word exists, matches with "some"
+key['z'] = 'd'    # use_ word exists, 'r' is already taken, matches with "used"
+key['c'] = 't'    # en_ered word exists, matches with "entered"
+key['d'] = 'h'    # t_e word exists, matches with "the"
+key['x'] = 'i'    # f_rst word and _ (single letter word) exist, matches with "first" and "i"
+key['e'] = 'a'    # single letter word exists, 'i' is already taken, matches with "a"
+key['j'] = 'v'    # ha_e word exists, matches with "have"
+key['a'] = 'c'    # _hamber word exists, matches with "chamber"
+key['v'] = 'g'    # nothin_ word exists, matches with "nothing"
+key['f'] = 'w'    # _hich word exists, matches with "which"
+key['q'] = 'l'    # be_ow and wi__ word exists, matches with "below" and "will"
+key['b'] = 'p'    # sim_le and ci_her word exists, matches with "simple" and "cipher"
+key['h'] = 'q'    # _uotes word exists, matches with "quotes"
+\end{minted}
+
+The plaintext revealed after using the above decryption key is: \newline
+
+\texttt{You  have  entered  the  first  chamber  of  the  caves.  As  you  can  see  there  is  nothing  of  interest  in  the  chamber.  Some  of  the  later  chambers  will  be  more  interesting  than  this  one,  i  am  serious.  The  code  used  for  this  message  is  a  simple  substitution  cipher  in  which  digits  have  been  shifted  by  2  places.  For  this  round  password  is  given  below,  without  the  quotes.}
+
+\begin{minted}{python}
+# For the case of integer digits, "1" must be subtracted from each digit, as mentioned
+# text after decryption, it was "2" but it itself was shifted so
+# x+x = 2, this gives x = 1
+\end{minted}
+
+So, final plaintext is: \newline
+
+\texttt{You  have  entered  the  first  chamber  of  the  caves.  As  you  can  see  there  is  nothing  of  interest  in  the  chamber.  Some  of  the  later  chambers  will  be  more  interesting  than  this  one,  i  am  serious.  The  code  used  for  this  message  is  a  simple  substitution  cipher  in  which  digits  have  been  shifted  by  1  places.  For  this  round  password  is  given  below,  without  the  quotes.} \newline
+
+Using the above decryption key and the logic for digit, we can decipher the code for the answer as well: \newline
+
+Code: \texttt{anQp81Qpan} \newline
+Solution: \texttt{cyLe70Lecy}
+
+\section{Chapter 2 (The Caveman)}
+
+
+\section{Appendix}
+
+This section explains each of the things used in between the solutions without proper explanation.
+
+\subsection{Index of Coincidence}
+
+The \textbf{Index of Coincidence} is a measure of how similar a frequency distribution is to the uniform distribution.
+$$ I.C. = \frac{\sum_{i=A}^{i=Z} f_i(f_i-1)}{N(N-1)}$$
+
+where $f_i$ is the count of letter $i$ (where $i = A,B,...,Z$) in the ciphertext, and $N$ is the total number of letters in the ciphertext. \newline
+
+Important facts about the \textit{Index of Coincidence}:
+\begin{itemize}
+  \setlength\itemsep{0em}
+    \item The \textit{Index of Coincidence} of valid English text is about $0.07$.
+    \item The \textit{Index of Coincidence} for uniform distribution of English text is about $0.038$.
+    \item The \textit{Index of Coincidence} remains the same for the ciphertext and plaintext if cipher is \textbf{Mono-alphabetic} (i.e. Substitution Cipher).
+    \item The \textit{Index of Coincidence} of ciphertext is closer to uniform distribution if cipher is \textbf{Poly-alphabetic} (such as Vigenere Cipher).
+\end{itemize}
+
+We can get an approximate idea of what kind of cipher is used to generate the ciphertext by using the \textit{Index of Coincidence}.
+
+\end{document}
