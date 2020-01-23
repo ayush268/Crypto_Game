@@ -77,7 +77,8 @@ The Steps employed in the hangman game and building the key are mentioned below:
 \begin{minted}{python}
 key = {}
 key['p'] = 'e'    # Because 'p' has very high frequency
-key['r'] = 's'    # _ee word exists, matches with "see"
+key['r'] = 's'    # 'r' has very high frequency,
+                  #  _ee word exists, matches with "see" not "bee"
 key['i'] = 'b'    # _e word exists, matches with "be"
 key['n'] = 'y'    # b_ word exists, matches with "by"
 key['m'] = 'n'    # bee_ word exists, matches with "been"
@@ -89,7 +90,8 @@ key['g'] = 'm'    # so_e word exists, matches with "some"
 key['z'] = 'd'    # use_ word exists, 'r' is already taken, matches with "used"
 key['c'] = 't'    # en_ered word exists, matches with "entered"
 key['d'] = 'h'    # t_e word exists, matches with "the"
-key['x'] = 'i'    # f_rst word and _ (single letter word) exist, matches with "first" and "i"
+key['x'] = 'i'    # f_rst word and _ (single letter word) exist,
+                  # matches with "first" and "i"
 key['e'] = 'a'    # single letter word exists, 'i' is already taken, matches with "a"
 key['j'] = 'v'    # ha_e word exists, matches with "have"
 key['a'] = 'c'    # _hamber word exists, matches with "chamber"

@@ -18,7 +18,7 @@ print(count)
 
 key = {}
 key['p'] = 'e'    # Because 'p' has very high frequency
-key['r'] = 's'    # _ee word exists, matches with "see"
+key['r'] = 's'    # 'r' has very high frequency, _ee word exists, matches with "see" not "bee"
 key['i'] = 'b'    # _e word exists, matches with "be"
 key['n'] = 'y'    # b_ word exists, matches with "by"
 key['m'] = 'n'    # bee_ word exists, matches with "been"
