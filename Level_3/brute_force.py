@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
 
 import requests
+import random
 from string import ascii_lowercase as al
-
+from pycipher import SimpleSubstitution as SimpleSub
 from itertools import permutations
-from bs4 import BeautifulSoup
+import enchant
+
+from ngram_score import ngram_score
+fitness = ngram_score('quadgrams.txt')
 
 ciphertext = """cpiftgt ef oldo ukuq vtyp vv ptttqkk dp txe tkcnmbi uxkfft ueukwuqe ad uwv ttdo. da tocwc, qqc qgcu woyg cx cpifteud wat tvkbd vu owk zelc dp txe vthr uccfgg. keb dteuof ut gle dzcc rtc wv ukkyyc xxuo edw. mqgu zec dtyac uldw cqev evyu xvo tee moo mt gle dkcur. tm evyoi qtzc cxz o mlcuauoc, vw wetd kkcc gwhego! cf da foedokm, aibet ccd ktbfkqyo:"""
 
@@ -57,59 +61,83 @@ def add_special_characters(text, indices, size):
 def get_text_after_perm(text, perm):
     (plain, indices) = remove_special_chars(text)
     new_text = apply_perm(plain, perm)
+    maxkey = list('abcdefghijklmnopqrstuvwxyz')
+    maxscore = -900000000
+    parentscore,parentkey = maxscore,maxkey[:]
 
-    headers = {
-        'authority': 'www.guballa.de',
-        'pragma': 'no-cache',
-        'cache-control': 'no-cache',
-        'origin': 'https://www.guballa.de',
-        'upgrade-insecure-requests': '1',
-        'dnt': '1',
-        'content-type': 'application/x-www-form-urlencoded',
-        'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.87 Safari/537.36',
-        'sec-fetch-user': '?1',
-        'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3',
-        'sec-fetch-site': 'same-origin',
-        'sec-fetch-mode': 'navigate',
-        'referer': 'https://www.guballa.de/substitution-solver',
-        'accept-encoding': 'gzip, deflate, br',
-        'accept-language': 'en-IN,en;q=0.9,en-GB;q=0.8,en-US;q=0.7',
-        'cookie': 'PHPSESSID=gs09k79bs320bsk9uhps43vpao; _pk_ref.1.103c=%5B%22%22%2C%22%22%2C1580227838%2C%22https%3A%2F%2Fwww.google.com%2F%22%5D; _pk_ses.1.103c=1; _pk_id.1.103c=1dd3474a2d21d3ee.1579604859.5.1580231182.1580227838.',
-    }
-    
-    data = {
-      'button': '',
-      'REQUEST_TOKEN': '32DbcQFAIljWUVFB3EKXP-P92t-EIjkb7VXhLk2ID6k',
-      'cipher': add_special_characters(new_text, indices, len(text)), 
-      'lang': 'en',
-      'break': 'Break Cipher'
-    }
-    
-    response = requests.post('https://www.guballa.de/substitution-solver', headers=headers, data=data)
-    print(response.status_code)
+    answer = ""
+    key = ""
+    i = 0
+    while i<20:
+        i = i+1
+        random.shuffle(parentkey)
+        deciphered = SimpleSub(parentkey).decipher(new_text)
+        parentscore = fitness.score(deciphered)
+        count = 0
+        while count < 1000:
+            a = random.randint(0,25)
+            b = random.randint(0,25)
+            child = parentkey[:]
+            child[a],child[b] = child[b],child[a]
 
-    soup = BeautifulSoup(response.text, 'html.parser')
-    answer = soup.find_all('textarea')[1].string
-    key = soup.find_all('code')[1].string
-    return (answer, key)
+            deciphered = SimpleSub(child).decipher(new_text)
+            score = fitness.score(deciphered)
+
+            if score > parentscore:
+                parentscore = score
+                parentkey = child[:]
+                count = 0
+            count = count+1
+
+        if parentscore>maxscore:
+            maxscore,maxkey = parentscore,parentkey[:]
+            ss = SimpleSub(maxkey)
+            key = maxkey
+            answer = ss.decipher(new_text)
+
+    key_string = "" 
+    for x in key: 
+        key_string += x  
+    return (add_special_characters(answer, indices, len(text)), key_string)
 
 def decode(key, perm):
     (p, i) = remove_special_chars(code)
     new = apply_perm(p, perm)
-    ans = [chr(ord('a')+key.index(i)) for i in new]
+    ans = [chr(ord('a')+key.index(j)) for j in new]
     return add_special_characters(ans, i, len(code))
+
+def valid_word_count(text):
+    d = enchant.Dict("en_US")
+    cnt = 0
+    cur = ""
+    for c in text:
+        if c.lower() in al:
+            cur += c
+        elif cur != "":
+            if d.check(cur):
+                cnt += 1
+            cur = ""
+    return cnt
 
 def main():
     n = 5
     perms = get_permutations(n)
-    f = open("plaintexts_5.txt", "a")
+    max_valid_words = 0
+    ans_text = ""
+    ans_code = ""
+    ans_key = ""
+    
     for i in perms:
         (res, key) = get_text_after_perm(ciphertext, i)
-        ans = decode(key, i)
-        f.write(key)
-        f.write("\n")
-        f.write(res + " => " + ans)
-        f.write("\n########################################################\n\n")
-    f.close()
+        decoded_code = decode(key, i)
+        
+        if valid_count(res) > max_valid_words:
+            max_valid_words = valid_word_count(res)
+            ans_text = res
+            ans_code = decoded_code
+            ans_key = key
+
+    #print(ans_key)
+    print(ans_code)
 
 main()
