@@ -3,7 +3,6 @@
 import requests
 import random
 from string import ascii_lowercase as al
-from pycipher import SimpleSubstitution as SimpleSub
 from itertools import permutations
 import enchant
 
@@ -11,7 +10,6 @@ from ngram_score import ngram_score
 fitness = ngram_score('quadgrams.txt')
 
 ciphertext = """cpiftgt ef oldo ukuq vtyp vv ptttqkk dp txe tkcnmbi uxkfft ueukwuqe ad uwv ttdo. da tocwc, qqc qgcu woyg cx cpifteud wat tvkbd vu owk zelc dp txe vthr uccfgg. keb dteuof ut gle dzcc rtc wv ukkyyc xxuo edw. mqgu zec dtyac uldw cqev evyu xvo tee moo mt gle dkcur. tm evyoi qtzc cxz o mlcuauoc, vw wetd kkcc gwhego! cf da foedokm, aibet ccd ktbfkqyo:"""
-
 code = "uhs_xafmf_no"
 
 def get_permutations(size):
@@ -61,18 +59,20 @@ def add_special_characters(text, indices, size):
 def get_text_after_perm(text, perm):
     (plain, indices) = remove_special_chars(text)
     new_text = apply_perm(plain, perm)
+    return (new_text, indices)
+
+def substitution_cipher(text):
     maxkey = list('abcdefghijklmnopqrstuvwxyz')
     maxscore = -900000000
-    parentscore,parentkey = maxscore,maxkey[:]
+    parentkey = maxkey[:]
 
     answer = ""
     key = ""
     i = 0
     while i<20:
         i = i+1
+        parentscore = -900000000
         random.shuffle(parentkey)
-        deciphered = SimpleSub(parentkey).decipher(new_text)
-        parentscore = fitness.score(deciphered)
         count = 0
         while count < 1000:
             a = random.randint(0,25)
@@ -80,7 +80,10 @@ def get_text_after_perm(text, perm):
             child = parentkey[:]
             child[a],child[b] = child[b],child[a]
 
-            deciphered = SimpleSub(child).decipher(new_text)
+            deciphered = ""
+            for x in text:
+                deciphered += chr(ord('A')+child.index(x))
+            
             score = fitness.score(deciphered)
 
             if score > parentscore:
@@ -91,14 +94,15 @@ def get_text_after_perm(text, perm):
 
         if parentscore>maxscore:
             maxscore,maxkey = parentscore,parentkey[:]
-            ss = SimpleSub(maxkey)
             key = maxkey
-            answer = ss.decipher(new_text)
+            answer = ""
+            for x in text:
+                answer += chr(ord('A')+maxkey.index(x))
 
     key_string = "" 
     for x in key: 
-        key_string += x  
-    return (add_special_characters(answer, indices, len(text)), key_string)
+        key_string += x
+    return (answer, key_string)  
 
 def decode(key, perm):
     (p, i) = remove_special_chars(code)
@@ -128,16 +132,18 @@ def main():
     ans_key = ""
     
     for i in perms:
-        (res, key) = get_text_after_perm(ciphertext, i)
+        (permuted_text, indices) = get_text_after_perm(ciphertext, i)
+        (substituted_text, key) = substitution_cipher(permuted_text)
+        res = add_special_characters(substituted_text, indices, len(ciphertext))
+
         decoded_code = decode(key, i)
         
-        if valid_count(res) > max_valid_words:
+        if valid_word_count(res) > max_valid_words:
             max_valid_words = valid_word_count(res)
             ans_text = res
             ans_code = decoded_code
             ans_key = key
 
-    #print(ans_key)
     print(ans_code)
 
 main()
