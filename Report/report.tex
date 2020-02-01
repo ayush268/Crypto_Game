@@ -25,6 +25,7 @@
 
 %\setlength\itemsep{0em}
 
+\newcommand{\myth}[1]{\textcolor{red}{\hl{#1}}}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -165,6 +166,97 @@ From the above, the solution is revealed: \texttt{the\_cave\_man\_be\_pleased}.
 
 \newpage
 \section{Chapter 3 (The Holes)}
+There are 4 sub-levels in the chapter, first 3 of these don't have any cipher but there are different tricks which need to be employed to get to the final sub-level. \newline
+
+The last sub-level is a \textbf{Permutation-Substitution Cipher}, the answer to - ``how it was recognised and solved" is explained in the subsection after the following list of steps/commands. \newline
+
+Below are the solution steps to get out of the final chamber:
+\begin{enumerate}
+  \setlength\itemsep{0em}
+  \item Type \texttt{enter} to go to sub-level 2.
+  \item At sub-level 2, you try to \texttt{put} your hand in the small hole, it is bitten, denoting there is someone there.
+  \item Type \texttt{enter} to go to sub-level 3, here there are a lot of mushrooms growing on the ground.
+  \item Type \texttt{pick} to pluck some mushrooms and come back to sub-level 2.
+  \item Type \texttt{give} to give the mushrooms to whatever is there in the small hole.
+  \item There is a spirit here, who gives you the code \texttt{thrnxxtzy} which can reveal a hidden door at the entrance chamber (sub-level 1).
+  \item Go back to sub-level 1 and type \texttt{thrnxxtzy}, this reveals a hidden door with a glass panel beside it.
+  \item Type \texttt{read} to get the ciphertext and code.
+  \item Type \texttt{jyg\_izuqo\_rr}, which is the decoded plaintext from the cipher provided.
+\end{enumerate}
+
+\subsection{Permutation-Substitution Cipher}
+The ciphertext given was: \newline
+
+\texttt{cpiftgt ef oldo ukuq vtyp vv ptttqkk dp txe tkcnmbi uxkfft ueukwuqe ad uwv ttdo. da tocwc, qqc qgcu woyg cx cpifteud wat tvkbd vu owk zelc dp txe vthr uccfgg. keb dteuof ut gle dzcc rtc wv ukkyyc xxuo edw. mqgu zec dtyac uldw cqev evyu xvo tee moo mt gle dkcur. tm evyoi qtzc cxz o mlcuauoc, vw wetd kkcc gwhego! cf da foedokm, aibet ccd ktbfkqyo:} \newline
+
+For identifying what kind of cipher is applied in the above text, we used the following techniques:
+
+\begin{itemize}
+  \setlength\itemsep{0em}
+  \item The \textbf{Index of Coincidence} of the above ciphertext is about $0.057$, which is very close to that of valid English text, this suggests that the cipher used is \textit{Mono-alphabetic} such as \textit{Substitution Cipher}, the detailed explanation on \textit{Index of Coincidence} can be found in \cref{ic}.
+  \item The \textbf{Chi-squared Statistic} of the above ciphertext is about $157$ against \textit{uniform distribution}, this suggests that the cipher used is \textit{not Poly-alphabetic} since it is not closer to uniform distribution, the detailed explanation on \textit{Chi-squared Statistic} can be found in \cref{chi}.
+  \item The \textbf{Chi-squared Statistic} of the above ciphertext is about $958$ against \textit{valid English text}, this suggests that the cipher used is \textbf{not} a \textit{Simple Permutation} of letters.
+  \item Based on the above, we try out different forms of \textit{Mono-alphabetic} ciphers first instead of \textit{Poly-alphabetic}.
+\end{itemize}
+
+Firstly, we will try to solve the cipher assuming it is \textit{Simple Substitution Cipher}. This doesn't seem to work, since we are not able to get any valid English text from it. \newline
+
+The code for solving the Substitution Cipher uses the \textbf{n-gram} approach and it is in the file: \texttt{ngram\_score.py}. \newline
+
+Since a \textit{Simple Substitution Cipher} doesn't work here, it could be some other form of \textit{Mono-alphabetic} cipher. \newline
+
+Lets make some observations about the ciphertext:
+\begin{itemize}
+  \setlength\itemsep{0em}
+    \item The occurrences of double letter phrases in words is very frequent and at very odd places, see the below text: \newline
+      \texttt{cpiftgt ef oldo ukuq vtyp \myth{vv} p\myth{ttt}q\myth{kk} dp txe tkcnmbi uxk\myth{ff}t ueukwuqe ad uwv \myth{tt}do. da tocwc, \myth{qq}c qgcu woyg cx cpifteud wat tvkbd vu owk zelc dp txe vthr u\myth{cc}f\myth{gg}. keb dteuof ut gle dz\myth{cc} rtc wv u\myth{kkyy}c \myth{xx}uo edw. mqgu zec dtyac uldw cqev evyu xvo t\myth{ee} m\myth{oo} mt gle dkcur. tm evyoi qtzc cxz o mlcuauoc, vw wetd \myth{kkcc} gwhego! cf da foedokm, aibet \myth{cc}d ktbfkqyo:}
+    \item The character `o' appears as a single letter, if we assume it to be `a' or `i' (according to english text), then the word `moo' will coincide to `\_aa' or `\_ii' which will not come out to be a valid English word.
+    \item A simple substitution solver doesn't give us a valid result for the ciphertext.
+\end{itemize}
+
+The above observations suggest the following things:
+\begin{itemize}
+  \setlength\itemsep{0em}
+    \item The letters in the ciphertext needs to be permuted before applying Substitution, this permutation can be a block permutation or matrix permutation or maybe something entirely different.
+    \item The cipher is \textit{Poly-alphabetic} (less-likely).
+\end{itemize}
+
+Firstly, we will try out \textbf{block-permutation} along with \textbf{Substitution}, i.e. \textbf{Simple Permutation-Substitution Cipher}. \newline
+
+For solving the \textit{Simple Permutation-Substitution Cipher}, the following steps were employed:
+\begin{enumerate}
+  \setlength\itemsep{0em}
+    \item Remove all characters from the text which are not part of the English alphabets, noting their position in the text since they will have to be added back at the end.
+    \item Calculate the \textit{block length} (for permutation) using the idea that block length will be a \textit{factor of the total number of characters}.
+    \item For each permutation get the permutated text from the ciphertext, and insert all the special characters at their designated places in the text.
+    \item Apply a Simple Substitution Cipher Solver to the text and see whether it gives a valid English Text.
+    \item If no permutation gives a successful result, try other block length till we reach some valid English Text or run out of factors.
+\end{enumerate}
+
+The code used in this part is in the file - \texttt{break\_perm-subs.py}. \newline
+
+The \textit{total number of characters} in the ciphertext is $270$.
+
+Another observation to make here is that the code to be deciphered: \texttt{uhs\_xafmf\_no} has total of $10$ characters.
+
+This suggests that the block length will be a factor of both $270$ and $10$, so it can be $2$, $5$ or $10$, and we will try each of these one by one. \newline
+
+Using the method described above, we got each permutation of ciphertext corresponding to block-length $2$ first, but none of them returned a valid English text after solving the Substitution, so we changed block-length to $5$. \newline
+
+Using block-length $5$ revealed the following plaintext after a certain permutation of ciphertext was solved using Substitution Cipher Solver: \newline
+
+\texttt{breaker of this code will be blessed by the squeaky spirit residing in the hole. go ahead, and find away of breaking the spell on him cast by the evil jaffar. the spirit of the cave man is always with you. find the magic wand that will let you out of the caves. it would make you a magician, no less than jaffar! to go through, speak the password:} \newline
+
+At this point, we got a valid English text from the ciphertext, so we won't be moving forward and trying out different block-length or other ciphers. \newline
+
+Using the permutation and decryption key retrieved from solving above cipher, we can decipher the code for the answer as well: \newline
+
+The decryption key retrieved from the Solver gave us $2$ possible solutions, since we did not have mapping for all $26$ characters: \newline
+Code: \texttt{uhs\_xafmf\_no} \newline
+Solution $1$: \texttt{jyg\_izuqo\_rr} \newline
+Solution $2$: \texttt{jyg\_ixuqo\_rr} \newline
+
+Finally, Solution $1$ was the answer.
 
 \newpage
 \section{Appendix}
@@ -181,13 +273,28 @@ where $f_i$ is the count of letter $i$ (where $i = A,B,...,Z$) in the ciphertext
 Important facts about the \textit{Index of Coincidence}:
 \begin{itemize}
   \setlength\itemsep{0em}
-    \item The \textit{Index of Coincidence} of valid English text is about $0.07$.
+    \item The \textit{Index of Coincidence} of valid English text is about $0.066$.
     \item The \textit{Index of Coincidence} for uniform distribution of English text is about $0.038$.
     \item The \textit{Index of Coincidence} remains the same for the ciphertext and plaintext if cipher is \textbf{Mono-alphabetic} (i.e. Substitution Cipher).
     \item The \textit{Index of Coincidence} of ciphertext is closer to uniform distribution if cipher is \textbf{Poly-alphabetic} (such as Vigenere Cipher).
 \end{itemize}
 
 We can get an approximate idea of what kind of cipher is used to generate the ciphertext by using the \textit{Index of Coincidence}.
+
+\subsection{Chi-squared Statistic} \label{chi}
+The \textbf{Chi-squared Statistic} is a measure of how similar two categorical probability distributions are. If the two distributions are identical, the chi-squared statistic is 0, if the distributions are very different, some higher number will result. The formula for the chi-squared statistic is:
+$$\chi^2(C,E) = \sum_{i=A}^{i=Z}\frac{(C_i-E_i)^2}{E_i}$$
+
+where $C_A$ is the count (not the probability) of letter $A$, and $E_A$ is the expected count of letter $A$. \newline
+
+Important facts about the \textit{Chi-squared Statistic}:
+\begin{itemize}
+  \setlength\itemsep{0em}
+  \item If the \textit{Chi-squared Statistic} of a ciphertext against \textit{uniform distribution} is very low (\textasciitilde 50 or less), then it is highly probable that the cipher is \textit{Poly-alphabetic}.
+  \item If the \textit{Chi-squared Statistic} of a ciphertext against \textit{valid English text} is high and the cipher is \textit{Mono-alphabetic}, then it can be solved by trying keys and lowering it.
+\end{itemize}
+
+We can get an approximate idea of whether the cipher is \textit{Poly-alphabetic} or not by using \textit{Chi-squared Statistic}.
 
 \subsection{Vigenere Cipher} \label{vc}
 The Vigenere Cipher is a polyalphabetic substitution cipher. \newline
