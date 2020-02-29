@@ -23,62 +23,68 @@ ipinv = [40,8,48,16,56,24,64,32,
          33,1,41,9,49,17,57,25]
 
 def inv_perm(text):
-	new_text = list("0"*64)
-	for i in range(64):
-		new_text[i] = text[ipinv[i]-1]
-	
-	return ''.join(new_text)
+    new_text = list("0"*64)
+    for i in range(64):
+        new_text[ipinv[i]-1] = text[i]
+    
+    return ''.join(new_text)
 
 def perm(text):
-	new_text = list("0"*64)
-	for i in range(64):
-		new_text[i] = text[ip[i]-1]
-	
-	return ''.join(new_text)
+    new_text = list("0"*64)
+    for i in range(64):
+        new_text[ip[i]-1] = text[i]
+    
+    return ''.join(new_text)
 
 
 def gen_64_bit_num():
-	text = ""
-	for i in range(64):
-		r = random.randint(0,1)
-		c = chr(r+ord('0'))
-		text += c
-	return text
+    text = ""
+    for i in range(64):
+        r = random.randint(0,1)
+        c = chr(r+ord('0'))
+        text += c
+    return text
 
 
 def apply_diff(text):
-	new_text = ""
-	for i in range(32):
-		r = random.randint(0,1)
-		c = chr(r+ord('0'))
-		new_text += c
+    new_text = ""
+    for i in range(32):
+        r = random.randint(0,1)
+        c = chr(r+ord('0'))
+        new_text += c
 
-	new_text += text[32:64]
-	return new_text
+    new_text += text[32:64]
+    return new_text
 
 def get_decoded(text):
-	decoded_text = ""
-	for i in range(0,64,4):
-		a = text[i:i+4]
-		sum = 0
-		for j in range(4):
-			sum *= 2
-			sum += ord(a[j])-ord('0')
-		decoded_text += chr(ord('f')+sum)
+    decoded_text = ""
+    for i in range(0,64,4):
+        a = text[i:i+4]
+        sum = 0
+        for j in range(4):
+            sum *= 2
+            sum += ord(a[j])-ord('0')
+        decoded_text += chr(ord('f')+sum)
 
-	return decoded_text
+    return decoded_text
 
 for i in range(2):
-	text1 = gen_64_bit_num()
-	text2 = apply_diff(text1)
+    text1 = gen_64_bit_num()
+    text2 = apply_diff(text1)
 
-	text1 = inv_perm(text1)
-	text2 = inv_perm(text2)
+    print(text1[32:])
+    print(text2[32:])
+    print()
+    print(perm(inv_perm(text1))[32:])
+    print(perm(inv_perm(text2))[32:])
+    print()
+    text1 = inv_perm(text1)
+    text2 = inv_perm(text2)
 
-	input_file.write(get_decoded(text1))
-	input_file.write("\n")
+    input_file.write(get_decoded(text1))
+    input_file.write("\n")
 
-	input_file.write(get_decoded(text2))
-	input_file.write("\n")
+    input_file.write(get_decoded(text2))
+    input_file.write("\n")
 
 input_file.close()
