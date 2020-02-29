@@ -3,3 +3,4 @@
 *.aux
 *.thm
 _minted*
+__pycache__

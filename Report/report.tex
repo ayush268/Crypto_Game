@@ -1,6 +1,6 @@
 \documentclass[10pt,twoside]{article}
 
-\newcommand{\reporttitle}{Levels 1-3}
+\newcommand{\reporttitle}{Levels 1-4}
 \newcommand{\reportauthora}{Ayush Bansal}
 \newcommand{\reportauthorb}{Gunjan Jalori}
 \newcommand{\reportauthorc}{Siddharth Nohria}
@@ -259,6 +259,98 @@ Solution $2$: \texttt{jyg\_ixuqo\_rr} \newline
 Finally, Solution $1$ was the answer.
 
 \newpage
+\section{Chapter 4 (The Spirit)}
+
+This level is tricky as we had to go back to the previous level and perform some task before we could proceed further. \newline
+
+There are 3 sub-tasks here, firstly we have to retrieve a \textit{Magic Wand}, secondly we have to \textit{free the Spirit}, finally solve the \textbf{DES Cipher} to advance to next level. \newline
+
+Below are the solution steps for each of the tasks listed above:
+\begin{itemize}
+  \setlength\itemsep{0em}
+  \item Retrieving the Magic Wand:
+    \begin{enumerate}
+      \item Type \texttt{enter} to go ahead in the chamber.
+      \item Type \texttt{dive} to take a dive into the lake.
+      \item At this point, we see an object looking like a wand, but trying to pull it directly causes us to drown, so first go back to surface and take a deep breath.
+      \item Type \texttt{dive} and \texttt{pull} the wand.
+    \end{enumerate}
+  \item Freeing the Spirit:
+    \begin{enumerate}
+        \item At this point, we can't figure out any way out, the screen in the chamber door is also blank and wand does not help us here.
+        \item We can recall that there was an old man/spirit before who helped us in chamber 3 and mentioned that he was trapped by someone, he could be freed by the magic wand.
+        \item We go back to chamber 3, \texttt{wave} our wand infront of the hole where the old man's spirit was.
+        \item The spirit is freed and says that he will help us along the way.
+    \end{enumerate}
+  \item Solving the \textbf{DES Cipher}:
+    \begin{enumerate}
+      \item After entering the 4th chamber, type \texttt{read}.
+        \item The screen is still blank, but the spirit tells us what is supposed to be there: \newline
+          \texttt{This is a magical screen. You can whisper something close to the screen and the corresponding coded text would appear on it after a while. So go ahead and try to break the code! The code used for this is a 4-round DES, so it should be easy for you!! Er wait ... maybe it is a 6-round DES ... sorry, my memory has blurred after so many years. But I am sure you can break even 6-round DES easily. A 10-round DES is a different matter, but this one surely is not 10-round ...(long pause) ... at least that is what I remember. One thing that I surely remember is that you can see the coded password by whispering 'password'. There was something funny about how the text appears, two letters for one byte or something like that. I do not recall more than that. I am sure you can figure it out though ...}
+    \end{enumerate}
+\end{itemize}
+
+\subsection{3-Round DES Cipher}
+
+Earlier, we were trying to figure out how many rounds of DES Cipher is applied here, so that we can devise the algorithm for the same. \newline
+
+The task became easier when a hint was revealed stating that the DES Cipher is \textit{3 Round}. \newline
+
+We will break \textit{3 Round DES} using \textbf{Differential Cryptanalysis} as we had discussed in class. \newline
+
+The idea behind \textit{Differential Cryptanalysis} was to get rid of the unknown value (i.e. the Key) so that an equation can be formed over the non-linear step (i.e. sBoxes). \newline
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[scale=0.5]{des.pdf}
+  \label{3-des}
+  \caption{3 Round DES}
+\end{figure}
+
+Important points about the figure above:
+\begin{itemize}
+  \setlength\itemsep{0em}
+  \item \textit{Double Red Line} implies we know both individual values of \textit{Differential Cryptanalysis}.
+  \item \textit{Single Golden Line} implies we know the differential value of 2 inputs, not the individual values themselves.
+  \item The pairs of inputs taken during Differential Cryptanalysis must have equal 32 bits on the right side.
+\end{itemize}
+
+Solving 3 Round DES:
+\begin{enumerate}
+  \setlength\itemsep{0em}
+    \item We will start by figuring out the 48-bit Key for the 3rd Round.
+    \item We know the differential value, just after and before the S-Boxes, thus, there will be 4 possible pairs of input values to the S-Box as studied in class.
+    \item This narrows down the search for key over each 6 bits to 4 possibilities.
+    \item We will pick another input here, take the intersection of possibilities and narrow down the key.
+    \item After sufficient tries, we get the 48-bit 3rd round key.
+    \item Now only 8 bits of the key remain, these can be easily brute-forced and figured out using the other round values.
+\end{enumerate}
+
+The code used in this part is as follows:
+\begin{itemize}
+  \setlength\itemsep{0em}
+  \item \texttt{constants.py}: Contains the constants for the DES.
+  \item \texttt{des.py}: Defines the DES Class encoding all the functions related to it.
+  \item \texttt{utils.py}: Defines the common utility functions related to DES and Key generation.
+  \item \texttt{break\_des.py}: Defines the main function which uses all the utilities and DES class to break the 3 Round DES according the steps described above.
+  \item \texttt{generate\_input.py}: Generates a pair of input which have equal 32 bits on the right side.
+\end{itemize}
+
+The key retrieved for the 3rd round of the DES is as follows:
+$$\texttt{[61, 28, 9, 54, 55, 9, 28, 51]}$$
+
+here, each value represents the 6-bits of the 48-bit key. \newline 
+
+After doing brute force on the remaining part of the key, we get the following value:
+$$147$$
+
+The Final Key (64-bit including the parity bits) for the DES is as follows:
+$$0111101001011100001010000011011011110010011010100110101011101000$$
+
+The encrypted password: \texttt{gnushmilfrplulktkrtrogltjojfqjpt} \newline
+The decrypted password: \texttt{rirfiirqnujpopirgkholonsqntpkqqi}
+
+\newpage
 \section{Appendix}
 
 This section explains each of the things used in between the solutions without proper explanation.
@@ -304,17 +396,5 @@ Suppose, the length of the encryption key is $k$, then the string formed by pick
 Since each such string is a \textit{Caesar Cipher}, the \textit{Index of Coincidence} of this string will be closer to that of valid English text rather than closer to uniform distribution. \newline
 
 Using the above principle, we can crack the \textit{Vigenere Cipher}.
-
-\begin{thebibliography}{9}
-\bibitem{}
-http://practicalcryptography.com/cryptanalysis/text-characterisation/chi-squared-statistic/
-
-\bibitem{}
-http://practicalcryptography.com/cryptanalysis/text-characterisation/index-coincidence/
-
-\bibitem{}
-http://practicalcryptography.com/cryptanalysis/text-characterisation/quadgrams/
-
-\end{thebibliography}
 
 \end{document}
