@@ -1,13 +1,13 @@
 \documentclass[10pt,twoside]{article}
 
-\newcommand{\reporttitle}{Levels 1-4}
-\newcommand{\reportauthora}{Ayush Bansal}
-\newcommand{\reportauthorb}{Gunjan Jalori}
-\newcommand{\reportauthorc}{Siddharth Nohria}
+\newcommand{\reporttitle}{Levels 1-5}
+\newcommand{\reportauthora}{Aman Deep Singh}
+\newcommand{\reportauthorb}{Ayush Bansal}
+\newcommand{\reportauthorc}{Gunjan Jalori}
 \newcommand{\reporttype}{Solutions Report}
-\newcommand{\cida}{160177}
-\newcommand{\cidb}{170283}
-\newcommand{\cidc}{160686}
+\newcommand{\cida}{15807084}
+\newcommand{\cidb}{160177}
+\newcommand{\cidc}{170283}
 
 % include files that load packages and define macros
 \input{includes} % various packages needed for maths etc.
@@ -349,6 +349,158 @@ $$0111101001011100001010000011011011110010011010100110101011101000$$
 
 The encrypted password: \texttt{gnushmilfrplulktkrtrogltjojfqjpt} \newline
 The decrypted password: \texttt{rirfiirqnujpopirgkholonsqntpkqqi}
+
+\newpage
+\section{Chapter 5 (The Fall)}
+This level is a bit similar to last one in the way of decoding the cipher, our \textit{Magic Wand} will come handy in this level. \newline
+
+There are 6 sub-levels in the chapter, first 5 of these don't have any cipher but there are trick which needs to be employed to reach the final sub-level. \newline
+
+The last sub-level is an \textbf{AES-type Cipher}, the answer to - ``how it was recognised and solved" is explained in the subsection after the following list of steps/commands. \newline
+
+Below is the solution to each of the sub-levels:
+\begin{enumerate}
+  \setlength\itemsep{0em}
+  \item \texttt{go} further in the passage as you enter the chamber 5.
+  \item \texttt{wave} your wand as you begin to fall, as anything else will lead to your death as you reach the end.
+  \item \texttt{dive} into the water, as there is nothing around you but water.
+  \item \texttt{go} further into the passage you reach after diving into the water.
+  \item \texttt{read} the glass panel beside the closed door. \newline
+\end{enumerate}
+
+Once we reach the sub-level 6, we get the following information from the spirit about what's written on the screen:
+
+\texttt{"This is another magical screen. And this one I remember perfectly... Consider a block of size 8 bytes as 8 x 1 vector over F\_{128} - constructed using the degree 7 irreducible polynomial x\^7 + x + 1 over F\_2. Define two transformations: first a linear transformation given by invertible 8 x 8 key matrix A with elements from F\_{128} and second an exponentiation given by 8 x 1 vector E whose elements are numbers between 1 and 126. E is applied on a block by taking the ith element of the block and raising it to the power given by ith element in E. Apply these transformations in the sequence EAEAE on the input block to obtain the output block. Both E and A are part of the key. You can see the coded password by simply whispering 'password' near the screen..."}
+
+\subsection{AES-type Cipher}
+
+Firstly, lets talk discuss some observations made about the problem:
+\begin{itemize}
+  \setlength\itemsep{0em}
+  \item Each element of the input $8x1$ vector is part of the finite polynomial field $F_{128}$, so each element (byte) will lie between $0$ and $127$ (both inclusive).
+  \item The input and output is encoded as in last level, i.e. one byte is represented by 2 characters, each lying between \texttt{'f'} and \texttt{'u'}. If byte value is 123, then its encoded value will be - \texttt{'mq'}.
+  \item Exponentiation process has a $8x1$ vector, each element of the input is raised to corresponding power in the vector, the elements of this exponent vector will lie between $1$ and $126$ (both inclusive).
+  \item Linear Transformation Matrix $A$ will be an $8x8$ matrix with each element from the finite polynomial field $F_{128}$, so each element will lie between $0$ and $127$ (both inclusive).
+  \item Exponentiation is a byte to byte operation and this operation is independent for each byte.
+  \item Linear Transformation is a mixed byte type operation and the mixing will depend on the actual values of the Matrix.
+  \item Both $A$ and $E$ are unknown to us and direct brute-force for the solution would require approx. $128^{72}$ or $2^{504}$ computations. \newline
+\end{itemize}
+
+For breaking the cipher, we will perform the \textbf{Chosen Plaintext Attack} on the cipher. \newline
+
+Before moving towards the actual solution, we will prove the following:
+\begin{itemize}
+  \setlength\itemsep{0em}
+  \item Matrix $A$ is \textbf{Lower Triangular Matrix}.
+  \item In the $8x1$ output vector, $i^{th}$ byte will depend on all bytes upto $(i-1)^{th}$ byte of the input, i.e. changing $i^{th}$ byte of input will change all bytes from $i^{th}$ to the $8^{th}$ byte of output. \newline
+\end{itemize}
+
+\begin{lemma}
+  Matrix $A$ is \textbf{Lower Triangular Matrix}
+\end{lemma}
+
+\begin{proof}
+  Suppose the matrix $A$ is as follows:
+  $$\begin{bmatrix}
+    a_1 & a_2 & a_3 & a_4 & a_5 & a_6 & a_7 & a_8\\
+    b_1 & b_2 & b_3 & b_4 & b_5 & b_6 & b_7 & b_8\\
+    c_1 & c_2 & c_3 & c_4 & c_5 & c_6 & c_7 & c_8\\
+    d_1 & d_2 & d_3 & d_4 & d_5 & d_6 & d_7 & d_8\\
+    e_1 & e_2 & e_3 & e_4 & e_5 & e_6 & e_7 & e_8\\
+    f_1 & f_2 & f_3 & f_4 & f_5 & f_6 & f_7 & f_8\\
+    g_1 & g_2 & g_3 & g_4 & g_5 & g_6 & g_7 & g_8\\
+    h_1 & h_2 & h_3 & h_4 & h_5 & h_6 & h_7 & h_8
+  \end{bmatrix}$$
+
+  \textbf{Part 1:} Using the \textbf{eighth} byte. \newline
+
+  Since, we are performing a chosen plaintext attack, lets take inputs of the following format:
+  $$ffffffffffffffXX$$
+  here, $XX$ will be a non-zero byte value i.e. from $1$ to $127$ (both inclusive). \newline
+
+  The ciphertext for the above plaintext format comes out to be:
+  $$ffffffffffffffXX$$
+  All first seven bytes remain zero ($ff$), even though the last byte of the input was non-zero, this is true for any value of the eighth byte. \newline
+
+  The $8x1$ vector retreived after performing the first \textit{Linear Transformation} will be as follows:
+  $$\begin{bmatrix}
+    a_8\cdot v & b_8\cdot v & c_8\cdot v & d_8\cdot v & e_8\cdot v & f_8\cdot v & g_8\cdot v & h_8\cdot v
+  \end{bmatrix}^T$$
+  here, $v$ is the value of the eighth byte of Exponentiation. \newline
+
+  The value of first seven bytes must result in zero for all possible input values of eighth byte, this will be true only if the \textbf{first seven values of the last column of A are zero}. \newline
+
+  So, the updated matrix $A$ will be as follows:
+  $$\begin{bmatrix}
+    a_1 & a_2 & a_3 & a_4 & a_5 & a_6 & a_7 & 0\\
+    b_1 & b_2 & b_3 & b_4 & b_5 & b_6 & b_7 & 0\\
+    c_1 & c_2 & c_3 & c_4 & c_5 & c_6 & c_7 & 0\\
+    d_1 & d_2 & d_3 & d_4 & d_5 & d_6 & d_7 & 0\\
+    e_1 & e_2 & e_3 & e_4 & e_5 & e_6 & e_7 & 0\\
+    f_1 & f_2 & f_3 & f_4 & f_5 & f_6 & f_7 & 0\\
+    g_1 & g_2 & g_3 & g_4 & g_5 & g_6 & g_7 & 0\\
+    h_1 & h_2 & h_3 & h_4 & h_5 & h_6 & h_7 & h_8
+  \end{bmatrix}$$
+
+  \textbf{Part 2:} Using the \textbf{seventh} byte. \newline
+
+  Now, lets take input of the following format:
+  $$ffffffffffffXXff$$
+
+  The ciphertext for the above plaintext format comes out to be:
+  $$ffffffffffffXXXX$$
+
+  First six bytes remain zero ($ff$), even though the seventh byte of the input was non-zero, this is true for any value of the seventh byte. \newline
+
+  The $8x1$ vector retreived after performing the first Linear Transformation will be as follows:
+  $$\begin{bmatrix}
+    a_7\cdot v & b_7\cdot v & c_7\cdot v & d_7\cdot v & e_7\cdot v & f_7\cdot v & g_7\cdot v & h_7\cdot v
+  \end{bmatrix}^T$$
+  here, $v$ is the value of the seventh byte of Exponentiation. \newline
+
+  The value of first six bytes must result in zero for all possible input values of seventh byte, this will be true only if the \textbf{first six values of the seventh column of A are zero}. \newline
+
+  So, the updated matrix $A$ will be as follows:
+  $$\begin{bmatrix}
+    a_1 & a_2 & a_3 & a_4 & a_5 & a_6 & 0 & 0\\
+    b_1 & b_2 & b_3 & b_4 & b_5 & b_6 & 0 & 0\\
+    c_1 & c_2 & c_3 & c_4 & c_5 & c_6 & 0 & 0\\
+    d_1 & d_2 & d_3 & d_4 & d_5 & d_6 & 0 & 0\\
+    e_1 & e_2 & e_3 & e_4 & e_5 & e_6 & 0 & 0\\
+    f_1 & f_2 & f_3 & f_4 & f_5 & f_6 & 0 & 0\\
+    g_1 & g_2 & g_3 & g_4 & g_5 & g_6 & g_7 & 0\\
+    h_1 & h_2 & h_3 & h_4 & h_5 & h_6 & h_7 & h_8
+  \end{bmatrix}$$
+
+  \textbf{Part 3:} Generalizing for the rest of the bytes. \newline
+  
+  Taking the following byte formats one at a time and performing the same steps we did above, we get the following ciphertext formats:
+  \begin{align*}
+    EAEAE(ffffffffffXXffff) &= ffffffffffXXXXXX \\
+    EAEAE(ffffffffXXffffff) &= ffffffffXXXXXXXX \\
+    EAEAE(ffffffXXffffffff) &= ffffffXXXXXXXXXX \\
+    EAEAE(ffffXXffffffffff) &= ffffXXXXXXXXXXXX \\
+    EAEAE(ffXXffffffffffff) &= ffXXXXXXXXXXXXXX
+  \end{align*} \newline
+
+  Performing the same calculations, the finally updated matrix $A$ that we receive will be as follows:
+  $$\begin{bmatrix}
+    a_1 & 0 & 0 & 0 & 0 & 0 & 0 & 0\\
+    b_1 & b_2 & 0 & 0 & 0 & 0 & 0 & 0\\
+    c_1 & c_2 & c_3 & 0 & 0 & 0 & 0 & 0\\
+    d_1 & d_2 & d_3 & d_4 & 0 & 0 & 0 & 0\\
+    e_1 & e_2 & e_3 & e_4 & e_5 & 0 & 0 & 0\\
+    f_1 & f_2 & f_3 & f_4 & f_5 & f_6 & 0 & 0\\
+    g_1 & g_2 & g_3 & g_4 & g_5 & g_6 & g_7 & 0\\
+    h_1 & h_2 & h_3 & h_4 & h_5 & h_6 & h_7 & h_8
+  \end{bmatrix}$$
+
+  The above matrix is a \textbf{Lower Triangular Matrix}.
+\end{proof}
+
+\begin{lemma}
+  In the $8x1$ output vector, $i^{th}$ byte will depend on all bytes upto $(i-1)^{th}$ byte of the input, i.e. changing $i^{th}$ byte of input will change all bytes from $i^{th}$ to the $8^{th}$ byte of output.
+\end{lemma}
 
 \newpage
 \section{Appendix}
