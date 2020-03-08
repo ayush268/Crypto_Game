@@ -594,6 +594,19 @@ Let the E $8x1$ vector be as follows
     e_1 & e_2 & e_3 & e_4 & e_5 & e_6 & e_7 & e_8
   \end{bmatrix}^T$$
 
+Let the A $8x8$ matrix be as follows
+
+  $$\begin{bmatrix}
+    a_{(1,1)} & 0 & 0 & 0 & 0 &0 &0 &0\\
+a_{(2,1)} & a_{(2,2)} & 0 & 0 & 0 &0 &0 &0 \\
+a_{(3,1)} & a_{(3,2)} & a_{(3,3)} & 0 & 0 &0 &0 &0 \\
+a_{(4,1)} & a_{(4,2)} & a_{(4,3)} & a_{(4,4)} & 0 &0 &0 &0 \\
+a_{(5,1)} & a_{(5,2)} & a_{(5,3)} & a_{(5,4)} & a_{(5,5)} &0 &0 &0 \\
+a_{(6,1)} & a_{(6,2)} & a_{(6,3)} & a_{(6,4)} & a_{(6,5)} &a_{(6,6)} &0 &0 \\
+a_{(7,1)} & a_{(7,2)} & a_{(7,3)} & a_{(7,4)} & a_{(7,5)} &a_{(7,6)} &a_{(7,7)} &0 \\
+a_{(8,1)} & a_{(8,2)} & a_{(8,3)} & a_{(8,4)} & a_{(8,5)} &a_{(8,6)} &a_{(8,7)} &a_{(8,8)}
+  \end{bmatrix}$$
+  
 The output of the first exponentiation will be
   $$\begin{bmatrix}
     i_1^{e_1} & i_2^{e_2} & i_3^{e_3} & i_4^{e_4} & i_5^{e_5} & i_6^{e_6} & i_7^{e_7} & i_8^{e_8}
@@ -601,42 +614,64 @@ The output of the first exponentiation will be
 
 The output of the first linear transform will be
   $$\begin{bmatrix}
-    (a_1\cdot i_1^{e_1}) \\
-    (b_1\cdot i_1^{e_1}) + (b_2\cdot i_2^{e_2}) \\
-    (c_1\cdot i_1^{e_1}) + (c_2\cdot i_2^{e_2}) + (c_3\cdot i_3^{e_3}) \\
-    (d_1\cdot i_1^{e_1}) + (d_2\cdot i_2^{e_2}) + (d_3\cdot i_3^{e_3}) + (d_4\cdot i_4^{e_4})\\
-    (e_1\cdot i_1^{e_1}) + (e_2\cdot i_2^{e_2}) + (e_3\cdot i_3^{e_3}) + (e_4\cdot i_4^{e_4}) + (e_5\cdot i_5^{e_5})\\
-    (f_1\cdot i_1^{e_1}) + (f_2\cdot i_2^{e_2}) + (f_3\cdot i_3^{e_3}) + (f_4\cdot i_4^{e_4}) + (f_5\cdot i_5^{e_5}) + (f_6\cdot i_6^{e_6})\\
-    (g_1\cdot i_1^{e_1}) + (g_2\cdot i_2^{e_2}) + (g_3\cdot i_3^{e_3}) + (g_4\cdot i_4^{e_4}) + (g_5\cdot i_5^{e_5}) + (g_6\cdot i_6^{e_6}) + (g_7\cdot i_7^{e_7})\\
-    (h_1\cdot i_1^{e_1}) + (h_2\cdot i_2^{e_2}) + (h_3\cdot i_3^{e_3}) + (h_4\cdot i_4^{e_4}) + (h_5\cdot i_5^{e_5}) + (h_6\cdot i_6^{e_6}) + (h_7\cdot i_7^{e_7}) + (h_8\cdot i_8^{e_8})
+    (a_{(1,1)}\cdot i_1^{e_1}) \\
+    (a_{(2,1)}\cdot i_1^{e_1}) + (a_{(2,2)}\cdot i_2^{e_2}) \\
+    (a_{(3,1)}\cdot i_1^{e_1}) + (a_{(3,2)}\cdot i_2^{e_2}) + (a_{(3,3)}\cdot i_3^{e_3}) \\
+    (a_{(4,1)}\cdot i_1^{e_1}) + (a_{(4,2)}\cdot i_2^{e_2}) + (a_{(4,3)}\cdot i_3^{e_3}) + (a_{(4,4)}\cdot i_4^{e_4})\\
+    (a_{(5,1)}\cdot i_1^{e_1}) + (a_{(5,2)}\cdot i_2^{e_2}) + (a_{(5,3)}\cdot i_3^{e_3}) + (a_{(5,4)}\cdot i_4^{e_4}) + (a_{(5,5)}\cdot i_5^{e_5})\\
+    (a_{(6,1)}\cdot i_1^{e_1}) + (a_{(6,2)}\cdot i_2^{e_2}) + (a_{(6,3)}\cdot i_3^{e_3}) + (a_{(6,4)}\cdot i_4^{e_4}) + (a_{(6,5)}\cdot i_5^{e_5}) + (a_{(6,6)}\cdot i_6^{e_6})\\
+    (a_{(7,1)}\cdot i_1^{e_1}) + (a_{(7,2)}\cdot i_2^{e_2}) + a_{(7,3)}\cdot i_3^{e_3}) + (a_{(7,4)}\cdot i_4^{e_4}) + (a_{(7,5)}\cdot i_5^{e_5}) + (a_{(7,6)}\cdot i_6^{e_6}) + (a_{(7,7)}\cdot i_7^{e_7})\\
+    (a_{(8,1)}\cdot i_1^{e_1}) + (a_{(8,2)}\cdot i_2^{e_2}) + (a_{(8,3)}\cdot i_3^{e_3}) + (a_{(8,4)}\cdot i_4^{e_4}) + (a_{(8,5)}\cdot i_5^{e_5}) + (a_{(8,6)}\cdot i_6^{e_6}) + (a_{(8,7)}\cdot i_7^{e_7}) + (a_{(8,8)}\cdot i_8^{e_8})
   \end{bmatrix}$$
-Here we can see that the first element depends only on $a_1, i_1 \& e_1$. Through further rounds of exponentiation and linear transforms, it is easy to observe that the first element of the output will depend only on $a_1, i_1 \& e_1$.
+Observe that if the input $8x1$ vector has only one non zero block $i_k$, then the output blocks upto index $k-1$ will be zero. $k_{th}$ block of output is $\big(a_{(k,k)}\cdot(a_{(k,k)}\cdot{i_k}^{e_k})^{e_k}\big)^{e_k}$. The $k^{th}$ block of the output will depend only on $i_k, e_k  $ and $a_{(k, k)}$[$(k,k)^{th}$ element in $A$].\\
 
 
-Also observe that if the input $8x1$ vector has only one non zero element $i_k$, then the output elements upto index $k-1$ will be zero. Also the $k^{th}$ element of the output will depend only on $i_k, e_k  $ and $a_{(k, k)}$[$(k,k)^{th}$ element in $A$].\\
-
-
-So, for each $k \in \{1,2,3,4,5,6,7,8\}$ multiple pairs of inputs are considered where only the $k^{th}$ element is non-zero and takes all possible values in $[0, 127]$. Using such pairs, we calculate possible values of $e_k$ and $a_{(k,k)}$ by iterating through all possible values of $e_k$ and $a_{(k,k)}$ and considering those which which provide correct input to output transform.\\
-\begin{center}
+So, for each $k \in \{1,2,3,4,5,6,7,8\}$ multiple inputs are considered where only the $k^{th}$ block is non-zero and takes all possible values in $[0, 127]$. For each such input, $k^{th}$ block of the output is considered.  Using such pairs, we calculate possible values of $e_k$ and $a_{(k,k)}$ by iterating through all possible values of $e_k$ and $a_{(k,k)}$ and considering those which which provide correct input to output transform.\\
+% \begin{center}
     
 
-\begin{tabular}{|c|c|c|}
-    \hline
-    k & Possible values of $e_k$ & Possible values of $a_{(k,k)}$\\
-    \hline
-    1 & &\\
-    2 & &\\
-    3 & &\\
-    4 & &\\
-    5 & &\\
-    6 & &\\
-    7 & &\\
-    8 & &\\
-    \hline
-\end{tabular}
-\end{center}
+% \begin{tabular}{|c|c|c|}
+%     \hline
+%     k & Possible values of $e_k$ & Possible values of $a_{(k,k)}$\\
+%     \hline
+%     1 & &\\
+%     2 & &\\
+%     3 & &\\
+%     4 & &\\
+%     5 & &\\
+%     6 & &\\
+%     7 & &\\
+%     8 & &\\
+%     \hline
+% \end{tabular}
+% \end{center}
 
-Now the task is do minimize this set of possible values of $e_k$ and  $a_{(k,k)}$ to get unique values. Also we need to find non-diagonal elements of $A$.
+Now the task is do minimize this set of possible values of $e_k$ and  $a_{(k,k)}$ to get unique values. Also we need to find non-diagonal elements of $A$.\\
+
+
+Consider the $k^{th}$ block of output when only the $j^{th}$ block of input is non-zero($k > j$). $k_{th}$ block of output is $\big(a_{(k,j)}\cdot(a_{(j,j)} \cdot i_j^{e_j})^{e_j} + a_{(k,k)}\cdot(a_{(k,j)} \cdot i_j^{e_j} )^{e_k} \big)^{e_k}$. The $k^{th}$ block of the output will depend on only $e_j, e_k, a_{(k,k)}, a_{(j, j)}, a_{(k, j)}$.\\
+
+
+Because we know a reduced set of possible values of $e_j, e_k, a_{(k,k)}, a_{(j, j)}$, we can get possible values of $a_{(k, j)}$ by considering plaintexts where $j^{th}$ block of input is non-zero and considering $k^{th}$ block of the corresponding ciphertext and iterating over all possible values of $a_{(k, j)}$ and considering only those which provide correct input to output transform.
+Also, we remove values of $e_j$'s, $e_k$'s, $a_{(j,j)}$'s  and $a_{(k,k)}$'s which have no such possible value of $a_{(k, j)}$, from the set of possible values of $e_k$'s and $a_{(k,k)}$'s.\\
+By doing such calculations for all $j \in \{1,2,3,4,5,6,7\}$ and $k,  \in [j+1, 8]$, we get unique values all non-diagonal elements of $A$. We also get unique values of diagonal elements of $A$($a_{(k,k)}$'s) and $e_k$'s.\\
+We obtain $E$ vector as 
+$$\begin{bmatrix}
+85 & 52 & 38 & 72& 116& 38& 66& 50
+    % e_1 & e_2 & e_3 & e_4 & e_5 & e_6 & e_7 & e_8
+  \end{bmatrix}^T$$
+ We obtain $A$ matrix as
+ 
+ $$\begin{bmatrix}
+ 100& 0& 0& 0& 0& 0& 0& 0\\
+ 122&56& 0& 0& 0& 0& 0& 0\\
+ 6 &121&40& 0& 0& 0& 0& 0\\
+  10&97&77&50& 0& 0& 0& 0\\
+  58&14&78&10&16& 0& 0& 0\\
+ 9&76 &114 &116&92&87& 0& 0\\
+ 104&30&98&92 &104&44&14& 0\\
+  13&91&54&58 &113&17&37 &103
+  \end{bmatrix}$$
 
 
 \newpage
