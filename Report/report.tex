@@ -395,7 +395,7 @@ Before moving towards the actual solution, we will prove the following:
   \item In the $8x1$ output vector, $i^{th}$ byte will depend on all bytes upto $(i-1)^{th}$ byte of the input, i.e. changing $i^{th}$ byte of input will change all bytes from $i^{th}$ to the $8^{th}$ byte of output. \newline
 \end{itemize}
 
-\begin{lemma}
+\begin{lemma} \label{lem:1}
   Matrix $A$ is \textbf{Lower Triangular Matrix}
 \end{lemma}
 
@@ -484,7 +484,8 @@ Before moving towards the actual solution, we will prove the following:
   \end{align*} \newline
 
   Performing the same calculations, the finally updated matrix $A$ that we receive will be as follows:
-  $$\begin{bmatrix}
+  \begin{align}
+    \begin{bmatrix}
     a_1 & 0 & 0 & 0 & 0 & 0 & 0 & 0\\
     b_1 & b_2 & 0 & 0 & 0 & 0 & 0 & 0\\
     c_1 & c_2 & c_3 & 0 & 0 & 0 & 0 & 0\\
@@ -493,14 +494,94 @@ Before moving towards the actual solution, we will prove the following:
     f_1 & f_2 & f_3 & f_4 & f_5 & f_6 & 0 & 0\\
     g_1 & g_2 & g_3 & g_4 & g_5 & g_6 & g_7 & 0\\
     h_1 & h_2 & h_3 & h_4 & h_5 & h_6 & h_7 & h_8
-  \end{bmatrix}$$
+    \end{bmatrix} \label{eq:1}
+  \end{align}
 
   The above matrix is a \textbf{Lower Triangular Matrix}.
 \end{proof}
 
-\begin{lemma}
+\begin{lemma} \label{lem:2}
   In the $8x1$ output vector, $i^{th}$ byte will depend on all bytes upto $(i-1)^{th}$ byte of the input, i.e. changing $i^{th}$ byte of input will change all bytes from $i^{th}$ to the $8^{th}$ byte of output.
 \end{lemma}
+
+\begin{proof}
+  The Matrix $A$ will be as defined in \cref{eq:1}. \newline
+
+  Let the input $8x1$ vector be as follows:
+  $$\begin{bmatrix}
+    i_1 & i_2 & i_3 & i_4 & i_5 & i_6 & i_7 & i_8
+  \end{bmatrix}^T$$
+
+  After applying the Linear Transformation using the matrix $A$, we will get the following $8x1$ vector:
+  $$\begin{bmatrix}
+    (a_1\cdot i_1) \\
+    (b_1\cdot i_1) + (b_2\cdot i_2) \\
+    (c_1\cdot i_1) + (c_2\cdot i_2) + (c_3\cdot i_3) \\
+    (d_1\cdot i_1) + (d_2\cdot i_2) + (d_3\cdot i_3) + (d_4\cdot i_4)\\
+    (e_1\cdot i_1) + (e_2\cdot i_2) + (e_3\cdot i_3) + (e_4\cdot i_4) + (e_5\cdot i_5)\\
+    (f_1\cdot i_1) + (f_2\cdot i_2) + (f_3\cdot i_3) + (f_4\cdot i_4) + (f_5\cdot i_5) + (f_6\cdot i_6)\\
+    (g_1\cdot i_1) + (g_2\cdot i_2) + (g_3\cdot i_3) + (g_4\cdot i_4) + (g_5\cdot i_5) + (g_6\cdot i_6) + (g_7\cdot i_7)\\
+    (h_1\cdot i_1) + (h_2\cdot i_2) + (h_3\cdot i_3) + (h_4\cdot i_4) + (h_5\cdot i_5) + (h_6\cdot i_6) + (h_7\cdot i_7) + (h_8\cdot i_8)
+  \end{bmatrix}$$
+
+  The above matrix clearly implies that first byte is independent of other bytes, second byte depends on first byte and itself, third byte depends on first, second bytes and itself and so on. \newline
+
+\end{proof}
+
+Now, we have established certain properties about Linear Transformation and Exponentiation, we can move on to cracking password and breaking the cipher. \newline
+
+Firstly, we will just decode the ciphertext of the password and get the corresponding plaintext without finding the actual values of the matrix $A$ and exponent $E$. \newline
+
+Nextly, we will use \textit{Chosen Plaintext Attack} to retrieve the values of $A$ and $E$.
+
+\subsubsection{Cracking Password}
+We will make use of the result of \cref{lem:2}. \newline
+
+Given a 8-byte ciphertext, we will determine the plaintext bytes one-by-one beginning from the first byte. \newline
+
+The Algorithm used is as follows:
+\begin{enumerate}
+  \setlength\itemsep{0em}
+  \item Divide the password into chunks of 8 bytes, if last chunk is not complete 8 bytes then pad it with zeroes ($ff$), and solve each chunk separately.
+  \item Initialize \texttt{known\_plaintext} as an empty string, since nothing is known right now.
+  \item For each ($i^{th}$) byte of the ciphertext, do the following:
+    \begin{enumerate}
+      \setlength\itemsep{0em}
+      \item Enumerate over all possibilities of byte values - $0$ to $127$, let this value be \texttt{current\_byte}.
+      \item Generate a plaintext as - \texttt{known\_plaintext + current\_byte + padding}, here padding will be applied to make the input plaintext 8 bytes.
+      \item Get the corresponding ciphertext, let it's $i^{th}$ byte be \texttt{cipher\_byte}.
+      \item If \texttt{cipher\_byte} is equal to the $i^{th}$ byte of the input ciphertext, then update \texttt{known\_plaintext = known\_plaintext + current\_byte}.
+      \item Go to next iteration of Step 3.
+    \end{enumerate}
+\end{enumerate}
+
+The above algorithm uses the fact that first byte is independent of all other bytes, so it can be directly found. \newline
+
+Once the first byte is found, it can be kept constant and second byte can be found using the same method, this continues for the rest of the bytes. \newline
+
+The number of computations performed in the above algorithm will be $128\cdot 8$ or $2^{10}$. \newline
+
+The code for the above algorithm can be found in \texttt{decrypt\_password.py}. \newline
+
+The password given was: \texttt{ktirlqhtlqijmmhqmgkplijngrluiqlq} \newline
+The plaintext solved is: \texttt{lhlgmjmkmglqlompmoltmglilqlmlgmh} \newline
+
+Directly adding the plaintext as the result, didn't advance us to the next level. \newline
+The ciphertext didn't have multiple plaintexts corresponding to it as well. \newline
+
+We thought that the input is an 8-byte value which is actually represented as 16 characters, and we tried printing the value of each byte which was represented by the plaintext: \newline
+
+The plaintext solved was: \texttt{lhlgmjmkmglqlompmoltmglilqlmlgmh} \newline
+The byte values were: \newline
+\texttt{[98, 97, 116, 117, 113, 107, 105, 122, 121, 110, 113, 99, 107, 103, 97, 114]} \newline
+
+Surprisingly, all byte values lie within the range of ascii values of \texttt{'a'} and \texttt{'z'}. \newline
+
+Finally, we tried the string generated by getting the ascii values of each of the above bytes, and this was the final answer. \newline
+
+Final Result was: \texttt{batuqkizynqckgar}
+
+\subsubsection{Solving for $A$ and $E$}
 
 \newpage
 \section{Appendix}
