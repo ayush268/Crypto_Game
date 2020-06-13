@@ -1,12 +1,12 @@
 \documentclass[10pt,twoside]{article}
 
-\newcommand{\reporttitle}{Levels 1-5}
-\newcommand{\reportauthora}{Aman Deep Singh}
-\newcommand{\reportauthorb}{Ayush Bansal}
+\newcommand{\reporttitle}{Levels 1-6}
+\newcommand{\reportauthora}{Ayush Bansal}
+\newcommand{\reportauthorb}{Aman Deep Singh}
 \newcommand{\reportauthorc}{Gunjan Jalori}
 \newcommand{\reporttype}{Solutions Report}
-\newcommand{\cida}{15807084}
-\newcommand{\cidb}{160177}
+\newcommand{\cida}{160177}
+\newcommand{\cidb}{15807084}
 \newcommand{\cidc}{170283}
 
 % include files that load packages and define macros
@@ -677,6 +677,136 @@ The code for getting input and output pairs can be found in the script \texttt{g
 The code for this part can be found in the script \texttt{getKeysandDecrypt.py}.\\
 Once we have $E$ and $A$, getting the password was just reduced to bruteforcing over all possible inputs and finding the input corresponding to the encrypted password. The input was then converted to ASCII format and the result was \texttt{batuqkizynqckgar}.
 
+\section{Chapter 6 (RSA Encryption)}
+
+Since we can't access the server during this level, we skipped to the final puzzle of the level which is breaking the \textbf{RSA Encryption} (with small exponent) when you know some significant part of the message.
+
+The problem statement provided to us is as follows:
+
+\begin{itemize}
+  \item The public key $(n,e)$ used for the \textbf{RSA Encryption}. \newline
+    \texttt{N = 84364443735725034864402554533826279174703893439763343343863260342756678609 \\ 216895093779263028809246505955647572176682669445270008816481771701417554768871 \\ 285020442403001649254405058303439906229201909599348669565697534331652019516409 \\ 514800265887388539283381053937433496994442146419682027649079704982600857517093} \newline
+    \texttt{e = 5}
+  \item The information about the password and message. \newline
+    \texttt{This door has RSA encryption with exponent 5 and the password is} \newline
+    \texttt{588511908193557145472758995584417156637461398472460756192707453386570070556983 \\ 787406377427753617688997008888580870506626143183054430644488980265035567576103 \\ 429384907413616436962850518672602785678969919273519645573749776196447636332298 \\ 96668511752432222528159214013173319855645351619393871433455550581741643299}
+\end{itemize}
+
+\subsection{Thinking about the Solution} \label{sec:1}
+
+For breaking the encryption, we will perform the \textbf{Coppersmith's Attack (Low Public exponent Attack)} on the password provided to us. \newline
+
+Before moving forward, let's state the famous \textbf{Coppersmith Theorem} as we are going to use it in our results.
+
+\begin{theorem}
+  Let $N$ be an integer of unknown factorization, which has a divisor $b \geq N^{\beta}$. Furthermore, let $f_b(x)$ be a univariate, monic polynomial of degree $\delta$. Then we can find all solutions $x_0$ for the equation $f_b(x) = 0 \; (\text{mod} \; b)$ with
+$$|x_0| \leq \frac{1}{2}N^{\frac{\beta^2}{\delta}-\epsilon}$$
+  in polynomial time in $\left(\text{log}N, \delta, \frac{1}{e}\right)$
+\end{theorem}
+
+And a \textit{corollary} which is a direct implication of the above theorem.
+
+\begin{theorem} \label{theorem:2}
+  Let $N$ be an integer of unknown factorization, which has a divisor $b \geq N^{\beta}$. Let $f_b(x)$ be a univariate, monic polynomial of degree $\delta$. Furthermore, let $c_N$ be a function that is upper-bounded by a polynomial in $\text{log}N$. Then we can find all solutions $x_0$ for the equation $f_b(x) = 0 \; (\text{mod} \; b)$ with
+  $$|x_0| \leq c_N N^{\frac{\beta^2}{\delta}}$$
+  in polynomial time in $(\text{log}N, \delta)$.
+\end{theorem}
+
+Now, let's get a few fundamentals out of the way, we know that: \newline
+
+Suppose we have the plaintext $m$ and we wish to encrypt it using the public key $(N,e)$, then the ciphertext $c$ will be as follows:
+\begin{align}
+  c \equiv m^e \; (mod \; N) \label{eq:2}
+\end{align}
+
+Now, notice that the problem of decrypting an RSA-encrypted plaintext $c \equiv m^e \; (mod \; N)$ is the problem of finding the unique positive root $x_0 = m < N$ of the polynomial:
+\begin{align}
+  f_n(x) = x^e - c \; (mod \; N) \label{eq:3}
+\end{align}
+
+Under the assumption that inverting the RSA function is hard, we cannot solve this problem in general. \newline
+
+But if we cannot solve the problem for all $m \in \mathbb{Z}_n$, then it might be feasible for especially small values of $m$ (as studied in class). Indeed, it is a well-known protocol failure of RSA that one can recover $m$ in polynomial time whenever $m < N^{\frac{1}{e}}$. The reason why this attack works is simple: \newline
+
+Since $m^e < N$, we have
+\begin{align}
+  m^e - c = 0 \quad \text{over} \; \; \mathbb{Z} \label{eq:4}
+\end{align}
+
+and not just modulo $N$. Thus, we can simply take the $e^{th}$ root of $c$ in order to recover the value of $m$. \newline
+
+Now consider the following problem:
+
+\begin{problem} \label{prob:1}
+  Suppose that $m = M + x$ for some known part $M$ of the message and some unknown part $x \leq N^{\frac{1}{e}}$. Can we still recover $m$?
+\end{problem}
+
+This situation occurs in the case of so-called \textbf{stereotyped messages}: Assume we already know a part $M$ of the message which is always the same, for example $M$ corresponds to ``Good morning to everybody. Todays session-key is:". But symmetric crypto-schemes often need keys of length at most $80$ bits. Hence, the above situation, where the unknown part $x$ is smaller than the $e^{th}$ root of the modulus $N$ can easily occur in practice when RSA is used with small exponent $e$. \newline
+
+Let's consider a special case of \cref{theorem:2}, $b = N$ and $c_N = 1$, which is provided in the work of Coppersmith \cite{Coppersmith1997}
+
+\begin{theorem} \label{theorem:3}
+  Let $N$ be an integer with unknown factorization. Furthermore, let $f_N(x)$ be a univariate, monic polynomial of degree $\delta$. Then we can find all solutions $x_0$ for the equation $f_N(x) = 0 \; (\text{mod} \; N)$ with
+  $$|x_0| \leq N^{\frac{1}{\delta}}$$
+  in polynomial time in $(\text{log}N, \delta)$.
+\end{theorem}
+
+If we apply \textbf{Coppersmith's method} to the above \cref{prob:1}, An application of above \cref{theorem:3} yields the following result.
+
+\begin{lemma} \label{lemma:1}
+  Let $(N,e)$ be an RSA public key. Furthermore, let $c := (M + x_0)^e \; (\text{mod} \; N)$ be an RSA-encrypted message with known $M$ and unknown $x_0$, where
+  $$x_0 \leq N^{\frac{1}{e}}$$
+  Then we can find $x_0$ in polynomial time in $\text{log}N$ and $e$.
+\end{lemma}
+
+\begin{proofn}
+  Define
+  \begin{align}
+    f_N(x) := (M + x)^e - c \label{eq:5}
+  \end{align}
+  which is a univariate monic polynomial of degree $e$ with the small root $x_0$, $x_0 \leq N^{\frac{1}{e}}$ modulo $N$. An application of \cref{theorem:3} proves the claim
+\end{proofn}
+
+\subsection{Solution Outline}
+We are provided the public key in the problem - $(N, e)$ and the encrypted password $c$. \newline
+
+At this point, we make an assumption that the password $x_0$ we want to recover is small i.e. $x_0 \leq N^{\frac{1}{e}}$, otherwise breaking RSA encryption is not feasible as we discussed in \cref{sec:1}. \newline
+
+If we assume full password $x_0$ as unknown and we know that it is small, then by using \cref{eq:4}, it can be found by taking the $e^{th}$ root of $c$. \newline
+But if we try to find the $e^{th}$ root of $c$, we are unsuccessful because it is not a perfect power of $5$ for some integer. \newline
+
+So, we move to solving the \cref{prob:1}. For this we should already know some part of the password and small part will be unknown. \newline
+
+In the problem, we are given the string \texttt{This door has RSA encryption with exponent 5 and the password is}. \newline
+At this point, we make a second assumption that this problem is like a \textbf{stereotyped message}. \newline
+
+So, the initial plaintext message will be of the form: \newline
+\texttt{This door has RSA encryption with exponent 5 and the password is XXXXXXXX...} \newline
+
+Here, known part of the message is ``\texttt{This door has RSA encryption with exponent 5 and the password is }" and the unknown part is what comes after this. \newline
+
+Now we established the assumptions, let's go through the steps we took to find out the value of $x_0$.
+
+\begin{itemize}
+  \setlength\itemsep{0em}
+  \item Since RSA works only on integers, we will first convert the known plaintext into hex format (using the corresponding ascii values of characters).
+  \item Convert the hex form into the corresponding integer $M_0$.
+  \item Iterate from $i=1$ to $i=200$ ($x_0$ can be upto \textasciitilde$200$ bits, by first assumption), for each iteration.
+    \begin{itemize}
+      \setlength\itemsep{0em}
+      \item Left shift the integer $M_0$ by $i$ to get integer $M$.
+      \item Solve the \cref{eq:5} modulo $N$ to get the value of small $x_0$.
+      \item If a solution exists, convert solution integer $x_0$ to hex format.
+      \item Finally, convert the hex format to ascii text and report the result.
+    \end{itemize}
+\end{itemize}
+
+The solution code for the problem can be found in \texttt{solve.sage}, we used the \textbf{Sage Math} libraries \cite{sagemath} to solve the equation by using the \textbf{Coppersmith's Algorithm} as described in Alexander May's PhD thesis \cite{alex} \newline 
+
+The password retrieved was: \texttt{tkigrdrei}. \newline
+
+Hence, the complete plaintext will be as follows: \newline
+\texttt{This door has RSA encryption with exponent 5 and the password is tkigrdrei}
 
 \newpage
 \section{Appendix}
@@ -724,5 +854,8 @@ Suppose, the length of the encryption key is $k$, then the string formed by pick
 Since each such string is a \textit{Caesar Cipher}, the \textit{Index of Coincidence} of this string will be closer to that of valid English text rather than closer to uniform distribution. \newline
 
 Using the above principle, we can crack the \textit{Vigenere Cipher}.
+
+\bibliographystyle{unsrt}
+\bibliography{references}
 
 \end{document}

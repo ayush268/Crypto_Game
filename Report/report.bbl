@@ -1,0 +1,20 @@
+\begin{thebibliography}{1}
+
+\bibitem{Coppersmith1997}
+Don Coppersmith.
+\newblock Small solutions to polynomial equations, and low exponent rsa
+  vulnerabilities.
+\newblock {\em Journal of Cryptology}, 10:233--260, Sep 1997.
+
+\bibitem{sagemath}
+Dense univariate polynomials over z/nz, implemented using ntl.
+\newblock
+  http://doc.sagemath.org/html/en/reference/polynomial\_rings/sage/rings/polynomial/
+  \\ polynomial\_modn\_dense\_ntl.html.
+
+\bibitem{alex}
+Alexander May.
+\newblock {\em New RSA Vulnerabilities Using Lattice Reduction Methods}.
+\newblock PhD thesis, University of Paderborn, 2003.
+
+\end{thebibliography}

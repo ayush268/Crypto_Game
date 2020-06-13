@@ -62,6 +62,7 @@
 \ifxetex
 \usepackage{fontspec}
 \usepackage{cleveref}
+\usepackage{seqsplit}
 \else
 \usepackage[pdftex,pagebackref,hypertexnames=false,colorlinks]{hyperref} % provide links in pdf
 \hypersetup{pdftitle={},
@@ -83,11 +84,23 @@
 % various theorems
 \usepackage{ntheorem}
 \theoremstyle{break}
-\newtheorem{lemma}{Lemma}
-\newtheorem{theorem}{Theorem}
-\newtheorem{remark}{Remark}
-\newtheorem{definition}{Definition}
-\newtheorem{proof}{Proof}
+\newtheorem{lemma}{Lemma}[section]
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{remark}{Remark}[section]
+\newtheorem{definition}{Definition}[section]
+\newtheorem{proof}{Proof}[section]
+\newtheorem*{proofn}{Proof}[section]
+\newtheorem*{lemman}{Lemma}[section]
+\newtheorem{problem}{Problem}[section]
+
+\counterwithin*{equation}{section}
+
+\crefname{problem}{problem}{problems}
+\crefname{problem}{Problem}{Problems}
+\crefname{theorem}{theorem}{theorems}
+\crefname{theorem}{Theorem}{Theorems}
+\crefname{proof}{proof}{proofs}
+\crefname{proof}{Proof}{Proofs}
 
 % example-environment
 \newenvironment{example}[1][]
