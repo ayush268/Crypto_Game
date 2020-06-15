@@ -1,6 +1,6 @@
 \documentclass[10pt,twoside]{article}
 
-\newcommand{\reporttitle}{Levels 1-6}
+\newcommand{\reporttitle}{Levels 1-7}
 \newcommand{\reportauthora}{Ayush Bansal}
 \newcommand{\reportauthorb}{Aman Deep Singh}
 \newcommand{\reportauthorc}{Gunjan Jalori}
@@ -26,6 +26,7 @@
 %\setlength\itemsep{0em}
 
 \newcommand{\myth}[1]{\textcolor{red}{\hl{#1}}}
+\newcommand\bold\textbf
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -807,6 +808,389 @@ The password retrieved was: \texttt{tkigrdrei}. \newline
 
 Hence, the complete plaintext will be as follows: \newline
 \texttt{This door has RSA encryption with exponent 5 and the password is tkigrdrei}
+
+
+\newpage
+\section{Chapter 7 (WECCAK, WEAK-KECCAK)}
+
+This assignment is based on a variant of \bold{KECCAK} hash function which we call \bold{WECCAK}.
+
+The description of WECCAK is as follows:
+
+\begin{enumerate}
+  \setlength\itemsep{0em}
+  \item Input to the hash function is a message $M \in \{0,1\}*$.
+  \item $M$ is padded with minimum number of zeros such that bit-length of padded message is a multiple of $184$.
+  \item The padded message is divided into blocks of $184$ bits. Let's call them $M_1,M_2,\dots,M_k$.
+  \item A state in WECCAK hash function is a $5\times5\times8$ 3-dimensional array.
+  \item Initial state $S$ contains all zeros.
+  \item The first message block $M_1$ is appended with $16$ zeros to form $M'_1$ and is $XOR$ed with $S$, similar to KECCAK.
+  \item This state is given as input to a function $F$ (defined below) and let's call its output as $O_1$. The output $F$ is also a $5\times5\times8$ 3-dimensional array.
+  \item The second message block $M_2$ is appended with $16$ zeros to form $M'_2$ and is $XOR$ed with $O_1$ and is given as input to $F$.
+  \item This is continued for $k$ times.
+  \item The output of WECCAK is the initial $80$ bits of $O_k$, similar to KECCAK.
+\end{enumerate}
+
+For the above WECCAK hash function, we have to answer the following questions:
+\begin{enumerate}
+  \setlength\itemsep{0em}
+  \item Compute the inverse of $\chi$ and $\theta$.
+  \item Claim about the security of WECCAK with $F=R\cdot R$, give a preimage, collision and second preimage attack.
+\end{enumerate}
+
+here $R=\chi\cdot\rho\cdot\pi\cdot\theta$ ($\theta,\rho,\pi,\chi$ are the same defined in KECCAK).
+
+\subsection{Thinking about the Problem}
+
+KECCAK (in our case WECCAK) hash functions has 3 parameters:
+\begin{itemize}
+  \setlength\itemsep{0em}
+  \item $r$ is the bitrate, it's value is $184$ here.
+  \item $c$ is the capacity, it's value is $16$ here.
+  \item $n$ is the output length, it's value is $80$ here.
+\end{itemize}
+
+KECCAK-p permutation is denoted by KECCAK-p[$b,n_r$]
+\begin{itemize}
+  \setlength\itemsep{0em}
+  \item $b$ is length of input string (called width of permutation), it is $200$ for WECCAK.
+  \item $n_r$ is number of rounds of internal transformation, it is $2$ for our custom WECCAK function since $F=R\cdot R$.
+\end{itemize}
+
+The $b$ bit input string can be represented as a $5\times5\times w$ 3-dimensional array, $w=8$ in our case.
+
+A lane in a state $S$ is denoted by $S[x][y]$ which is a substring $S[x][y][0]|S[x][y][1]|\dots|S[x][y][w-1]$ where $|$ is the concatenation function, hence the length of lane is $w$. \newline
+
+Usually in KECCAK, the internal transformation consists of $5$ step mappings $\theta,\rho,\pi,\chi$ and $\iota$ which act on a state, but in our case there are only $4$ step mappings, since $R=\chi\cdot\rho\cdot\pi\cdot\theta$, note the absence of $\iota$. Let our initial matrix be $S$, then mappings will be as follows:
+
+\begin{enumerate}
+  \setlength\itemsep{0em}
+  \item $\theta$: \newline
+    $$S'[x][y][z] = S[x][y][z] \oplus E[x,z]$$
+    and
+    $$E[x,z] = P[(x+1)\ \text{\textit{mod}}\ 5][(z-1)\ \text{\textit{mod}}\ 8] \oplus P[(x-1)\ \text{\textit{mod}}\ 5][z]$$
+    where $P[x][z]$ is the parity of a column, i.e.,
+    $$P[x][z] = \bigoplus_{i=0}^{4} S[x][i][z]$$
+
+  \item $\rho$: simply rotates each lane by a predefined (known) value \newline
+    $$S'[x][y] = S[x][y] << r[x][y]$$
+    where $<<$ is bitwise rotation towards MSB of the $8$ bit word. The values of $r[x][y]$ are predefined constants.
+
+  \item $\pi$: interchanges lanes \newline
+    $$S'[y][2x+3y] = S[x][y]$$
+
+  \item $\chi$: non-linear operation \newline
+    \begin{align*}
+      S'[x][y][z] = S[x][y][z] \oplus ((&S[(x+1)\ \text{\textit{mod}}\ 5][y][z] \oplus 1)\cdot \\
+      &S[(x+2)\ \text{\textit{mod}}\ 5][y][z])
+    \end{align*}
+\end{enumerate}
+
+We will make use of the above notations and definitions in our solution ahead.
+
+\subsection{Solution}
+
+Our solution will be broadly divided into 2 parts:
+\begin{enumerate}
+  \setlength\itemsep{0em}
+  \item We will analyze each of the $4$ steps in the internal transformation and compute the inverse of each.
+  \item Analyse the security of WECCAK by performing 3 attacks:
+    \begin{itemize}
+      \setlength\itemsep{0em}
+      \item Preimage Attack
+      \item Collision Attack
+      \item Second Preimage Attack
+    \end{itemize}
+\end{enumerate}
+
+$R$ is the internal transformation step for us, it includes $4$ computations, as follows:
+$$R=\chi\cdot\rho\cdot\pi\cdot\theta$$
+
+Now, we want to compute $R^{-1}$ (inverse of $R$), it will be denoted as the following composition of functions (or steps):
+$$R^{-1} = \theta^{-1}\cdot\pi^{-1}\cdot\rho^{-1}\cdot\chi^{-1}$$
+
+The problem statement requires us to find $\chi^{-1}$ and $\theta^{-1}$, so we will talk about these $2$ in detail and briefly about computation of $\pi^{-1}$ and $\rho^{-1}$.
+
+\subsubsection{Computing $\chi^{-1}$}
+
+Firstly, let's analyse the $\chi$ step and compute $\chi^{-1}$.
+
+An important observation here is that $\chi$ is a row operation, i.e. it does not depend on the value of $y$ and $z$. Using this fact, we are going to make the following claim. \newline
+
+\begin{claim} \label{chi-inv}
+  If the output of $\chi$ for an entire row is known, i.e. $\chi([a_0,a_1,a_2,a_3,a_4]) = [b_0,b_1,b_2,b_3,b_4]$, then we have
+  $$a_i = b_i \oplus (1 \oplus b_{i+1})\cdot(b_{i+2} \oplus (1 \oplus b_{i+3}) \cdot b_{i+4})$$
+\end{claim}
+
+\begin{proof}
+  For the $\chi$ step, in a row, we have atmost $5$ values, so the equation for the computation of $b_i$'s will be as follows:
+  \begin{align}
+    b_i &= a_i \oplus (1 \oplus a_{i+1}) \cdot a_{i+2} \label{chi:1} \\
+    b_{i+1} &= a_{i+1} \oplus (1 \oplus a_{i+2}) \cdot a_{i+3} \label{chi:2} \\
+    b_{i+2} &= a_{i+2} \oplus (1 \oplus a_{i+3}) \cdot a_{i+4} \label{chi:3} \\
+    b_{i+3} &= a_{i+3} \oplus (1 \oplus a_{i+4}) \cdot a_i \label{chi:4} \\
+    b_{i+4} &= a_{i+4} \oplus (1 \oplus a_i) \cdot a_{i+1} \label{chi:5}
+  \end{align}
+
+  We know the values of $\{b_0, b_1, b_2, b_3, b_4\}$, and we need to find $a_i$'s.
+  \begin{align*}
+    a_i &= b_i \oplus (1 \oplus a_{i+1})\cdot a_{i+2} && \text{From \cref{chi:1}} \\
+    a_i &= b_i \oplus (1 \oplus b_{i+1} \oplus (1 \oplus a_{i+2})\cdot a_{i+3})\cdot a_{i+2} && \text{From \cref{chi:2}} \\
+    a_i &= b_i \oplus (1 \oplus b_{i+1})\cdot a_{i+2} \oplus (1 \oplus a_{i+2})\cdot a_{i+2}\cdot a_{i+3} \\
+    a_i &= b_i \oplus (1 \oplus b_{i+1})\cdot a_{i+2} && \text{$(1 \oplus a_{i+2})\cdot a_{i+2} = 0$} \\
+    a_i &= b_i \oplus (1 \oplus b_{i+1})\cdot (b_{i+2} \oplus (1 \oplus a_{i+3})\cdot a_{i+4}) && \text{From \cref{chi:3}} \\
+    a_i &= b_i \oplus (1 \oplus b_{i+1})\cdot (b_{i+2} \oplus (1 \oplus b_{i+3} \oplus (1 \oplus a_{i+4})\cdot a_i)\cdot a_{i+4}) && \text{From \cref{chi:4}} \\
+    a_i &= b_i \oplus (1 \oplus b_{i+1})\cdot (b_{i+2} \oplus (1 \oplus b_{i+3})\cdot a_{i+4}) && \text{$(1 \oplus a_{i+4})\cdot a_{i+4} = 0$} \\
+    a_i &= b_i \oplus (1 \oplus b_{i+1})\cdot (b_{i+2} \oplus (1 \oplus b_{i+3})\cdot (b_{i+4} \oplus (1 \oplus a_i)\cdot a_{i+1})) && \text{From \cref{chi:5}}
+  \end{align*}
+
+  Rewriting the last equation above, we get the following result:
+  \begin{equation}
+    \begin{split}
+    a_i = b_i &\oplus (1 \oplus b_{i+1})\cdot (b_{i+2} \oplus (1 \oplus b_{i+3})\cdot b_{i+4}) \\
+    &\oplus (1\oplus b_{i+1})\cdot(1\oplus b_{i+3})\cdot(1 \oplus a_i)\cdot a_{i+1}
+    \end{split} \label{chi:6}
+  \end{equation}
+
+  Let's look at the 2nd part of the equation above:
+  \begin{align*}
+    (1&\oplus b_{i+1})\cdot(1\oplus b_{i+3})\cdot(1 \oplus a_i)\cdot a_{i+1} \\
+    &= ((1 \oplus a_{i+1}) \oplus (1 \oplus a_{i+2})\cdot a_{i+3})\cdot((1\oplus a_{i+3}) \oplus (1 \oplus a_{i+4})\cdot a_i)\cdot(1 \oplus a_i)\cdot a_{i+1} && \text{From \cref{chi:2} and \cref{chi:4}} \\
+    &= (1 \oplus a_{i+1})\cdot(1\oplus a_{i+3})\cdot(1 \oplus a_i)\cdot a_{i+1} \\
+    &\ \ \oplus (1 \oplus a_{i+1})\cdot(1 \oplus a_{i+4})\cdot(1 \oplus a_i)\cdot a_{i+1} \cdot a_i \\
+    &\ \ \oplus (1 \oplus a_{i+2})\cdot(1\oplus a_{i+3})\cdot(1 \oplus a_i)\cdot a_{i+3} \cdot a_{i+1} \\
+    &\ \ \oplus (1 \oplus a_{i+2})\cdot(1 \oplus a_{i+4})\cdot(1 \oplus a_i)\cdot a_{i+3} \cdot a_i \cdot a_{i+1} && \text{Expanding the equation} \\
+    &= 0 && \text{$(1 \oplus a_i)\cdot a_i = 0$ for all the $4$ terms}
+  \end{align*}
+
+  Putting back the above result in \cref{chi:6}, we get the following result:
+
+  $$a_i = b_i \oplus (1 \oplus b_{i+1})\cdot (b_{i+2} \oplus (1 \oplus b_{i+3})\cdot b_{i+4})$$
+\end{proof}
+
+The proof of \cref{chi-inv} gives us the result for the value of $\chi^{-1}$
+\begin{equation}
+  \begin{split}
+  S[x][y][z] = S'[x][y][z] \oplus (&S'[(x+1)\ \text{\textit{mod}}\ 5][y][z] \oplus 1)\cdot \\
+                                  (&S'[(x+2)\ \text{\textit{mod}}\ 5][y][z] \oplus (S'[(x+3)\ \text{\textit{mod}}\ 5][y][z] \oplus 1)\cdot \\
+                                  &S'[(x+4)\ \text{\textit{mod}}\ 5][y][z]) \\
+  \end{split}
+\end{equation}
+
+\subsubsection{Computing $\theta^{-1}$}
+
+Nextly, we analyze the $\theta$ step and compute $\theta^{-1}$. \newline
+The $\theta$ step proceeds as follows, it works on columns:
+    \begin{equation}
+      S'[x][y][z] = S[x][y][z] \oplus E[x][z] \label{th:1}
+    \end{equation}
+    and
+    \begin{equation}
+      E[x][z] = P[(x+1)\ \text{\textit{mod}}\ 5][(z-1)\ \text{\textit{mod}}\ 8] \oplus P[(x-1)\ \text{\textit{mod}}\ 5][z] \label{th:2}
+    \end{equation}
+    where $P[x][z]$ is the parity of a column, i.e.,
+    \begin{equation}
+      P[x][z] = \bigoplus_{y=0}^{4} S[x][y][z] \label{th:3}
+    \end{equation}
+
+Instead of the following the above procedure repeatedly for each element, we will try to accomplish the above result by computing it differently.
+
+Let's look at it from another perspective, take a look at the following figure: \newline
+
+\begin{figure}[h]
+    \includegraphics[scale=0.16]{images/keccak_theta.png}
+    \centering
+    \caption{KECCAK THETA}
+    \label{keccak-theta}
+\end{figure}
+
+The stepwise computation process of the $\theta$ step will be as follows:
+\begin{enumerate}
+  \setlength\itemsep{0em}
+  \item We flatten the KECCAK Structure along the column, computing $P[x][z]$ 2-dimensional array by calculating parity of each column.
+  \item We apply the $\theta$-effect, i.e. compute $E[x][z]$ 2-dimensional array by using the following formula
+    $$E[x][z] = P[(x+1)\ \text{\textit{mod}}\ 5][(z-1)\ \text{\textit{mod}}\ 8] \oplus P[(x-1)\ \text{\textit{mod}}\ 5][z]$$
+  \item Re-generate the 3-dimensional array by $XOR$ing the original column with the corresponding $E[x][z]$ to get the updated column, i.e.
+    $$S'[x][y][z] = S[x][y][z] \oplus E[x][z]$$
+\end{enumerate}
+
+The $P[x][z]$ and $E[x][z]$ are $5\times w$ (in our case $5\times 8$) 2-dimensional arrays. \newline
+
+To compute the $\theta^{-1}$, we are going to prove the following claim using the result we discussed above.
+
+\begin{claim}
+  $\theta$ is invertible, i.e. knowing all the values of $S'$, we can find all the values of $S$.
+\end{claim}
+
+\begin{proof}
+  Instead of seeing $P[x][z]$ (parity) of the input state $S$ as $5\times w$ bit-array, we can see it as a $5w$-bit vector $W$, i.e. we have a unique mapping $\sigma$ between $x,z$ and $i^{th}$ coordinate in the $5w$-bit vector $$W: i = x\times w + z$$
+
+  Similarly, $E[x][z]$ can be seen as a $5w$-bit vector as well, let's call it $W'$. \newline
+  The $\theta$-effect can be seen as the result of a matrix multiplication:
+  \begin{equation}
+    W' = W\cdot T \label{th:4}
+  \end{equation}
+
+  In the above equation, $T$ is a $5w\times 5w$ 2-dimensional matrix applying the $\theta$-effect, it is already known. \newline
+
+  Two interesting observations about $T$:
+  \begin{itemize}
+    \setlength\itemsep{0em}
+    \item It is not always invertible, an example of $T$ can be taken with $w=4$, det$(T)=0$ for the same.
+    \item All of its elements are non-negative $(0$ or $1)$.
+  \end{itemize}
+
+  So, we cannot invert the $\theta$-effect step, so let's go back to $\theta$ for the inverse.
+
+  \begin{figure}[h]
+      \includegraphics[scale=0.8]{images/theta.png}
+      \centering
+      \caption{THETA STEP}
+      \label{theta}
+  \end{figure}
+
+  In the above figure, the values of $P$ and $E(P)$ defined in \cref{th:3} and \cref{th:2} respectively, we have omitted $x$, $z$ from $P[x][z]$ and $E[x][z]$ for ease,\newline
+  Let's use the above results
+  \begin{align*}
+    \bigoplus_{y=0}^{4} S[x][y][z] &= P && \text{Recall \cref{th:3}} \\
+    \bigoplus_{y=0}^{4} S'[x][y][z] &= P \oplus (5\times E(P)) && \text{From \cref{th:1} and above equation} \\
+  \end{align*}
+  Using the fact that $E \oplus E = 0$, we have
+  \begin{equation}
+    \bigoplus_{y=0}^{4} S'[x][y][z] = P \oplus E(P) \label{th:5}
+  \end{equation}
+
+  Coming back to our earlier result, \cref{th:4}
+  \begin{align*}
+    W' &= W\cdot T && \text{Recall \cref{th:4}} \\
+    W' \oplus W &= W\cdot(I \oplus T) && \text{Adding $W$ on both sides} \\
+    E(P) \oplus P &= P\cdot(I \oplus T) && \text{Remember $W=P$ and $W'=E(P)$ from the $\theta$-effect} \\
+    \bigoplus_{y=0}^{4} S'[x][y][z] &= P\cdot(I \oplus T) && \text{From \cref{th:5}}
+  \end{align*}
+
+  From the above result, we can retrieve the value of $P$, since $I \oplus T$ will be invertible.
+  \begin{equation}
+    P = \bigoplus_{y=0}^{4} S'[x][y][z]\cdot(I\oplus T)^{-1} \label{th:6}
+  \end{equation}
+
+  Now, we have retrieved $P$, we can simply apply the $\theta$-effect and get $E(P)$, and
+  \begin{align*}
+    S'[x][y][z] &= S[x][y][z] \oplus E[x][z] && \text{Recall \cref{th:1}} \\
+    S[x][y][z] &= S'[x][y][z] \oplus E[x][z] && \text{XOR's additive inverse is itself}
+  \end{align*}
+
+  So, the final inverse of $\theta$ will look as follows:
+  \begin{figure}[h]
+      \includegraphics[scale=0.8]{images/theta-inverse.png}
+      \centering
+      \caption{THETA INVERSE}
+      \label{theta-inv}
+  \end{figure}
+
+  The major time consuming step in the above operation is computation of $(I\oplus T)^{-1}$ $(5w\times 5w$ 2-dimensional matrix).
+\end{proof}
+
+\subsubsection{Computing $\pi^{-1}$ and $\rho^{-1}$}
+
+The $\rho$ step simply rotates each lane by a predefined lane towards MSB, so to invert it, we can rotate each lane by the original amount towards LSB, i.e.
+$$S[x][y] = S'[x][y] >> r[x][y]$$
+
+Applying above equation for each lane will give us $\rho^{-1}$. \newline
+
+The $\pi$ step simply interchanges the lanes of the state $S$, just like the above step, we can get the $\pi^{-1}$ by simply putting each lane in its original place.
+
+\subsubsection{Preimage Attack on WECCAK} \label{pre-image}
+
+We have the internal transformation function $R=\chi\cdot\rho\cdot\pi\cdot\theta$ which contains $4$ individual steps which we already discussed in sections above. \newline
+
+In the last $3$ sub-sections, we proved that all of the $4$ steps are invertible, this makes the function (step) $R$ invertible
+$$R^{-1} = \theta^{-1}\cdot\pi^{-1}\cdot\rho^{-1}\cdot\chi^{-1}$$
+
+Since $R$ is invertible, the WECCAK function $F = R\cdot R$ is also invertible,
+$$F^{-1} = R^{-1} \cdot R^{-1}$$
+
+We will use the above result to perform the \bold{Preimage Attack on WECCAK}.
+
+\begin{solution}
+  For the Preimage Attack, we will be given a Hash Value, which is $80$ bits in WECCAK $(10$ lanes, since each lane is of $8$ bits). \newline
+
+  We know that $F$ is invertible and we have already devised the method calculate the inverse of $F$, let's use it to move backwards from our hash output. \newline
+
+  Since hash value is of only $10$ lanes, rest $15$ lanes are unknown to us, and their specific value don't matter to us because we just want to find an input string which results in this hash value (first $10$ lanes). \newline
+
+  The steps to perform the Preimage Attack will be as follows:
+  \begin{enumerate}
+    \setlength\itemsep{0em}
+    \item Populate the first $10$ lanes with the given hash value, pad the rest $15$ lanes as all zeroes
+    \item Now we know the complete output $O_1$ (all $25$ lanes) of WECCAK, apply the function $F^{-1}$ on $O_1$.
+    \item $F^{-1}(O_1)$ gives us the value $M'_1$
+    \item Take the first $184$ bits of $M'_1$, call it $M_1$.
+    \item $M_1$ is the Preimage for the provided Hash Value.
+  \end{enumerate}
+
+  In the above solution we are only finding a message of length atmost $184$ bits (i.e. only one block) which will give us the required hash value.
+
+  If we try to find hash value of $M_1$,
+  \begin{itemize}
+    \setlength\itemsep{0em}
+    \item We pad $M_1$ with $16$ zeroes to get $M'_1$.
+    \item $M'_1$ is $XOR$ed with $S$ which is all zeroes right now, so $M'_1$ will not change
+    \item $F$ is applied to $M'_1$ to get the output $O_1$.
+    \item The first $80$ bits of $O_1$ will be same as our hash value.
+  \end{itemize}
+
+  The time complexity of the $F^{-1}$ computation will be driven by the $\theta^{-1}$ step but since the size of matrix to invert is $40 \times 40$, it is well within the bounds of computation.
+\end{solution}
+
+\subsubsection{Collision Attack on WECCAK}
+
+We have already discussed the \bold{Preimage Attack} on WECCAK in \cref{pre-image}. \newline
+
+For performing the \bold{Collision Attack}, we will be given a Hash Value $H$, and we have to find $2$ distinct messages $M_1$ and $N_1$ such that both of their hashes are $H$.
+
+\begin{solution}
+  Since we know the hash value $H$, we know $10$ lanes of the output, rest $15$ lanes are unknown.
+
+  The steps to perform the Preimage Attack will be as follows:
+  \begin{enumerate}
+    \setlength\itemsep{0em}
+    \item Perform the Preimage Attack with rest $15$ lanes as zeroes to get $M_1$.
+    \item Pick a different value for the rest $15$ lanes and perform the Preimage Attack to get $N_1$.
+    \item If $N_1 \neq M_1$, then we are done, report $M_1$ and $N_1$ as the result.
+    \item If $N_1 = M_1$, then go to Step 2.
+  \end{enumerate}
+
+  Both the input strings $M_1$ and $N_1$ retrieved from above will result in the same hash value $H$.
+\end{solution}
+
+\subsubsection{Second Preimage Attack}
+
+We have already discussed the \bold{Preimage Attack} on WECCAK in \cref{pre-image}. \newline
+
+For performing the \bold{Second Preimage Attack}, we will be given a Hash Value $H(M)$, and the original input string $M$, we have to find $N_1$ such that the hash of $N_1$ is same as $H(M)$.
+
+\begin{solution}
+  Since we know the hash value $H$, we know $10$ lanes of the output, rest $15$ lanes are unknown. \newline
+
+  Our solution will be based on the value of $M$. \newline
+  The solution steps will be as follows:
+  \begin{itemize}
+    \setlength\itemsep{0em}
+    \item If the size of $M$ is greater than $184$ bits, i.e. the input string consists of more that $1$ block, then simply perform the \bold{Preimage Attack} using $H(M)$ to get $N_1$ and report the result.
+    \item If the size of $M$ is atmost $184$ bits, then do the following:
+      \begin{enumerate}
+        \setlength\itemsep{0em}
+        \item Calculate the $O_1$ value by performing WECCAK operations on $H(M)$ and note the rest $15$ lanes of $O_1$.
+        \item Pick a different value for the rest $15$ lanes and perform the Preimage Attack to get $N_1$.
+        \item If $N_1 \neq M$, then we are done, report $N_1$ as the result.
+        \item If $N_1 = M$, then go to Step 2.
+      \end{enumerate}
+  \end{itemize}
+
+  In the first case, when $M$ is input string of more than $1$ blocks, we are sure that $N_1$ will be distinct since we are computing input strings of only $1$ block. \newline
+
+  The second case is similar to what we did in the \bold{Collision Attack} and it will give us a $N_1$ which is distinct from $M$.
+\end{solution}
 
 \newpage
 \section{Appendix}
